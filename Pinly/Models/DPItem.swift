@@ -17,30 +17,29 @@ enum DPItemSchemaV1: VersionedSchema {
     
     @Model
     class DPItem: Identifiable, Codable {
-        var id: String
-        var name: String
-        var pin: String
+        @Attribute(.unique) var id: String
+        var address: String
         var latitude: Double
         var longitude: Double
         var favourite: Bool
         var deleted: Bool
         var createdAt: Date
         var updatedAt: Date
-            
+        
+        var pin: String { id } // Return the id when looking for pin
+        
         init(
-            id: String = UUID().uuidString,
-            name: String = "",
             pin: String,
+            address: String = "",
             latitude: Double,
             longitude: Double,
             favourite: Bool = false,
             deleted: Bool = false,
             createdAt: Date = Date.now,
-            updatedAt: Date = Date.now,
+            updatedAt: Date = Date.now
         ) {
-            self.id = id
-            self.name = name
-            self.pin = pin
+            self.id = pin
+            self.address = address
             self.latitude = latitude
             self.longitude = longitude
             self.deleted = deleted
@@ -51,7 +50,7 @@ enum DPItemSchemaV1: VersionedSchema {
         
         // Codable implementation
         enum CodingKeys: String, CodingKey {
-            case id, name, pin, latitude, longitude, deleted, favourite, createdAt, updatedAt
+            case id, address, latitude, longitude, deleted, favourite, createdAt, updatedAt
         }
         
         required init(from decoder: Decoder) throws {
@@ -59,8 +58,7 @@ enum DPItemSchemaV1: VersionedSchema {
 
             id = try container.decode(String.self, forKey: .id)
             
-            name = try container.decodeIfPresent(String.self, forKey: .name) ?? ""
-            pin = try container.decode(String.self, forKey: .pin)
+            address = try container.decodeIfPresent(String.self, forKey: .address) ?? ""
             latitude = try container.decode(Double.self, forKey: .latitude)
             longitude = try container.decode(Double.self, forKey: .longitude)
             deleted = try container.decode(Bool.self, forKey: .deleted)
@@ -86,8 +84,7 @@ enum DPItemSchemaV1: VersionedSchema {
             var container = encoder.container(keyedBy: CodingKeys.self)
             
             try container.encode(id, forKey: .id)
-            try container.encode(name, forKey: .name)
-            try container.encode(pin, forKey: .pin)
+            try container.encode(address, forKey: .address)
             try container.encode(latitude, forKey: .latitude)
             try container.encode(longitude, forKey: .longitude)
             try container.encode(deleted, forKey: .deleted)

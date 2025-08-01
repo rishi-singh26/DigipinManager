@@ -86,4 +86,9 @@ extension String {
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: self)
     }
+    
+    func validateDIGIPIN(_ input: String) -> Bool {
+        let regex = /^[A-Za-z0-9]{3}-[A-Za-z0-9]{3}-[A-Za-z0-9]{4}$/
+        return input.wholeMatch(of: regex) != nil
+    }
 }

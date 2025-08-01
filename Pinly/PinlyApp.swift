@@ -14,6 +14,7 @@ struct PinlyApp: App {
     
     @StateObject private var mapController = MapController()
     @StateObject private var mapViewModel = MapViewModel()
+    @StateObject private var locationManager = LocationManager()
     
     init() {
         let container: ModelContainer
@@ -36,6 +37,7 @@ struct PinlyApp: App {
             ContentView()
                 .environmentObject(mapController)
                 .environmentObject(mapViewModel)
+                .environmentObject(locationManager)
         }
         .modelContainer(sharedModelContainer)
     }

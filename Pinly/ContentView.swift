@@ -9,10 +9,22 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var mapController: MapController
+    
+    @State private var hasUpdatedMap = true
     
     var body: some View {
         MapView()
+            .onAppear {
+                locationManager.requestLocationPermission()
+            }
+            //Update map position on user location update
+            .onReceive(locationManager.$location) { location in
+                if let location = location, !hasUpdatedMap {
+                    mapController.updatedMapPosition(with: location.coordinate)
+                }
+            }
     }
 }
 
@@ -21,4 +33,5 @@ struct ContentView: View {
         .modelContainer(for: DPItem.self, inMemory: true)
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
+        .environmentObject(LocationManager.shared)
 }
