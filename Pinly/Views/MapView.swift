@@ -8,25 +8,46 @@
 import SwiftUI
 import MapKit
 
+struct MapItem: Identifiable {
+    let id: String
+}
+
 struct MapView: View {
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
     
     @State private var searchText: String = ""
+    @State private var selectedMarker: String?
+
     @Namespace var mapScope
     
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                Map(position: $mapController.position) {
+                Map(position: $mapController.position, selection: $selectedMarker) {
                     UserAnnotation()
                     MapPolyline(points: MapController.boundPoints)
                         .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
                     if let searchLocation = mapController.searchLocation {
                         Marker("Searched DIGIPIN", coordinate: searchLocation)
                             .mapItemDetailSelectionAccessory(.sheet)
+                            .tag("searchMarker")
                     }
+                }
+                .sheet(item: Binding<MapItem?>(
+                    get: { selectedMarker == "searchMarker" ? MapItem(id: "searchMarker") : nil },
+                    set: { _ in selectedMarker = nil }
+                )) { item in
+                    VStack {
+                        Text("Search Location Details")
+                        Text("Coordinate: \(mapController.searchLocation?.latitude ?? 0), \(mapController.searchLocation?.longitude ?? 0)")
+                        Button("Close") {
+                            selectedMarker = nil
+                        }
+                    }
+                    .presentationDetents([.height(350), .fraction(0.999)])
+                    .presentationBackground(.thickMaterial)
                 }
                 .mapStyle(mapController.selectedMapStyle)
                 .mapControls {
