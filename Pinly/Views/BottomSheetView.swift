@@ -21,7 +21,6 @@ struct BottomSheetView: View {
     @State private var haptic: Bool = false
     //
     @State private var showQRSheet = false
-    @State private var qrCodePin = ""
     
     var body: some View {
         NavigationView {
@@ -46,7 +45,7 @@ struct BottomSheetView: View {
         // Update sheet height on textfield focus
         .onChange(of: isFocused, handleFocusChange)
         // Presentation modifiers
-        .presentationDetents([.height(80), .height(320), .fraction(0.999)], selection: $viewModel.sheetDetent)
+        .presentationDetents([.height(80), .height(350), .fraction(0.999)], selection: $viewModel.sheetDetent)
         .presentationBackground(.thickMaterial)
         .presentationBackgroundInteraction(.enabled)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -56,41 +55,25 @@ struct BottomSheetView: View {
         .sensoryFeedback(.impact, trigger: haptic)
         .sheet(isPresented: $showSettingsSheet) { }
         .sheet(isPresented: $showQRSheet) {
-            VStack {
-                HStack {
-                    Text(qrCodePin)
-                    Spacer()
-                    Button {
-                        showQRSheet = false
-                    } label: {
-                        ActionBtnBuilder(symbol: "xmark.circle.fill")
-                    }
-                }
-                .padding()
-                QRCodeView(inputText: qrCodePin, headerText: qrCodePin)
-                    .presentationDetents([.fraction(0.65)])
-                    .presentationBackground(.thinMaterial)
-                    .navigationTitle("Hello")
-                    .navigationBarTitleDisplayMode(.inline)
-                
-                Spacer()
+            if mapController.searchAddressData.1 != nil && showSearchBar {
+                DigipinQRView(pin: searchText)
+            } else {
+                DigipinQRView(pin: mapController.digipin ?? "")
             }
         }
     }
 }
-//39J-49L-KM47
+
 // MARK: - View builders
 extension BottomSheetView {
     @ViewBuilder
     private func HeaderBuilder() -> some View {
         HStack(spacing: 10) {
             if !showSearchBar {
-                Button {
+                CButton.RoundBtn(symbol: "magnifyingglass") {
                     haptic.toggle()
                     withAnimation { showSearchBar = true }
                     isFocused = true
-                } label: {
-                    ActionBtnBuilder(symbol: "magnifyingglass")
                 }
             }
             
@@ -116,9 +99,9 @@ extension BottomSheetView {
             } label: {
                 ZStack {
                     if showSearchBar {
-                        ActionBtnBuilder(symbol: "xmark")
+                        CButton.RoundBtnLabel(symbol: "xmark")
                     } else {
-                        ActionBtnBuilder(symbol: "switch.2")
+                        CButton.RoundBtnLabel(symbol: "switch.2")
                     }
                 }
             }
@@ -175,67 +158,47 @@ extension BottomSheetView {
     }
     
     @ViewBuilder
-    private func ActionBtnBuilder(symbol: String) -> some View {
-        Image(systemName: symbol)
-            .font(.title3)
-            .fontWeight(.semibold)
-            .foregroundStyle(.primary)
-            .frame(width: 48, height: 48)
-            .background(.gray.opacity(0.15), in: .circle)
-        //.glassEffect(in: .circle)
-            .transition(.blurReplace)
-    }
-    
-    @ViewBuilder
     private func AddressTileBuilder(address: String, location: CLLocationCoordinate2D?, pin: String) -> some View {
         Section {
             Text(address)
                 .lineLimit(2, reservesSpace: true)
+            Text(pin)
             LatLonView(location, prefix: "Coordinates: ")
             HStack {
                 ShareLink(item: getLocationDetails(address: address, location: location, pin: pin)) {
-                    ReactBtnLableBuilder(symbol: "square.and.arrow.up")
+                    CButton.RectBtnLabel(symbol: "square.and.arrow.up")
                 }
                 .buttonStyle(.plain)
                 Spacer()
-                RectActionBtnBuilder(symbol: "qrcode", helpText: "Share DIGIPIN details via QR code") {
+                CButton.RectBtn(symbol: "qrcode", helpText: "Share DIGIPIN details via QR code") {
                     showQRSheet = true
-                    qrCodePin = pin
                 }
+                .buttonStyle(.plain)
                 Spacer()
-                RectActionBtnBuilder(symbol: "list.bullet.rectangle.portrait", helpText: "Save DIGIPIN to list") {
+                CButton.RectBtn(symbol: "list.bullet.rectangle.portrait", helpText: "Save DIGIPIN to list") {
                     print("Hello w")
                 }
+                .buttonStyle(.plain)
                 Spacer()
                 Menu {
-                    ShareLink("Share Coordinates", item: location?.toString() ?? "")
+                    ShareLink("Share Coordinates", item: location!.toString())
+                        .disabled(location == nil)
+//                    QRShareButton(
+//                        title: "Share coordinates QR",
+//                        inputText: location!.toString(),
+//                        titleText: "COORDINATES",
+//                        subTitleText: location!.toString()
+//                    )
+//                    .disabled(location == nil)
+                    Divider()
                     ShareLink("Share DIGIPIN", item: pin)
+//                    QRShareButton(title: "Share DIGIPIN QR", inputText: pin, titleText: pin, subTitleText: "DIGIPIN")
                 } label: {
-                    ReactBtnLableBuilder(symbol: "ellipsis")
+                    CButton.RectBtnLabel(symbol: "ellipsis")
                 }
+                .buttonStyle(.plain)
             }
         }
-    }
-    
-    @ViewBuilder
-    private func RectActionBtnBuilder(symbol: String, helpText: String = "", action: @escaping () -> Void) -> some View {
-        Button {
-            action()
-        } label: {
-            ReactBtnLableBuilder(symbol: symbol)
-        }
-        .buttonStyle(.plain)
-        .help(helpText)
-    }
-    
-    @ViewBuilder
-    private func ReactBtnLableBuilder(symbol: String) -> some View {
-        Image(systemName: symbol)
-            .font(.title2)
-            .fontWeight(.semibold)
-            .foregroundStyle(Color.accentColor)
-            .frame(width: 68, height: 48)
-            .background(.gray.opacity(0.15), in: .rect(cornerRadius: 12))
     }
 }
 

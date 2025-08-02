@@ -1,5 +1,5 @@
 //
-//  WeatherManager.swift
+//  WeatherUtility.swift
 //  Pinly
 //
 //  Created by Rishi Singh on 01/08/25.
@@ -10,7 +10,7 @@ import WeatherKit
 import CoreLocation
 
 @MainActor
-class WeatherManager {
+class WeatherUtility {
     private static let weatherService = WeatherService()
 
     /// Fetches weather data for the given coordinates.
