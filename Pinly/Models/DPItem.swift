@@ -25,9 +25,7 @@ enum DPItemSchemaV1: VersionedSchema {
         var deleted: Bool
         var createdAt: Date
         var updatedAt: Date
-        
-        var pin: String { id } // Return the id when looking for pin
-        
+                
         init(
             pin: String,
             address: String = "",

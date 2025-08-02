@@ -7,60 +7,49 @@
 
 import SwiftUI
 import MapKit
+import SwiftData
 
 struct MapItem: Identifiable {
     let id: String
 }
 
 struct MapView: View {
+    @Query private var dpItems: [DPItem]
+    
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
-    
-    @State private var searchText: String = ""
-    @State private var selectedMarker: String?
 
     @Namespace var mapScope
     
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                Map(position: $mapController.position, selection: $selectedMarker) {
-                    UserAnnotation()
-                    MapPolyline(points: MapController.boundPoints)
-                        .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
-                    if let searchLocation = mapController.searchLocation {
-                        Marker("Searched DIGIPIN", coordinate: searchLocation)
-                            .mapItemDetailSelectionAccessory(.sheet)
-                            .tag("searchMarker")
-                    }
+        ZStack(alignment: .center) {
+            Map(position: $mapController.position, selection: $mapController.selectedMarker) {
+                UserAnnotation()
+                MapPolyline(points: MapController.boundPoints)
+                    .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
+                if let searchLocation = mapController.searchLocation {
+                    Marker("Searched DIGIPIN", coordinate: searchLocation)
+                        .mapItemDetailSelectionAccessory(.sheet)
                 }
-                .sheet(item: Binding<MapItem?>(
-                    get: { selectedMarker == "searchMarker" ? MapItem(id: "searchMarker") : nil },
-                    set: { _ in selectedMarker = nil }
-                )) { item in
-                    VStack {
-                        Text("Search Location Details")
-                        Text("Coordinate: \(mapController.searchLocation?.latitude ?? 0), \(mapController.searchLocation?.longitude ?? 0)")
-                        Button("Close") {
-                            selectedMarker = nil
-                        }
-                    }
-                    .presentationDetents([.height(350), .fraction(0.999)])
-                    .presentationBackground(.thickMaterial)
-                }
-                .mapStyle(mapController.selectedMapStyle)
-                .mapControls {
-                    MapUserLocationButton(scope: mapScope)
-                    MapScaleView(anchorEdge: .leading, scope: mapScope)
-                    //MapPitchToggle(scope: mapScope)
-                    MapCompass(scope: mapScope)
-                }
-                .mapControlVisibility(.visible)
-                .onMapCameraChange(frequency: .onEnd, handleCameraMoveEnd)
                 
-                ScopeBuilder(geometry: geometry)
+                ForEach(dpItems) {
+                    Marker($0.id, coordinate: CLLocationCoordinate2DMake($0.latitude, $0.longitude))
+                        .mapItemDetailSelectionAccessory(.sheet)
+                        .tag($0.id)
+                }
             }
+            .mapStyle(mapController.selectedMapStyle)
+            .mapControls {
+                MapUserLocationButton(scope: mapScope)
+                MapScaleView(anchorEdge: .leading, scope: mapScope)
+                //MapPitchToggle(scope: mapScope)
+                MapCompass(scope: mapScope)
+            }
+            .mapControlVisibility(.visible)
+            .onMapCameraChange(frequency: .onEnd, handleCameraMoveEnd)
+            
+            ScopeBuilder()
         }
         .ignoresSafeArea(.keyboard)
         .onAppear(perform: {
@@ -79,7 +68,6 @@ struct MapView: View {
         } action: { newValue in
             viewModel.safeAreaBottomInset = newValue
         }
-        
     }
     
     @ViewBuilder
@@ -115,11 +103,10 @@ struct MapView: View {
     }
     
     @ViewBuilder
-    private func ScopeBuilder(geometry: GeometryProxy) -> some View {
+    private func ScopeBuilder() -> some View {
         Image(systemName: "scope")
             .font(.title2)
             .foregroundColor(.primary)
-            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
     }
     
     private func handleCameraMoveEnd(context: MapCameraUpdateContext) {
@@ -137,8 +124,27 @@ struct MapView: View {
 }
 
 #Preview {
-    MapView()
+    @Previewable @State var container: ModelContainer = {
+        let container = try! ModelContainer(for: DPItem.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        
+        // Add sample data
+        let sampleDPItems = [
+            DPItem(pin: "4P3-33C-4635", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-5MMJ", latitude: 13.005222, longitude: 77.752166),
+            DPItem(pin: "4P3-33C-P7JF", latitude: 13.004407, longitude: 77.753131),
+            DPItem(pin: "4P3-33C-T9MF", latitude: 13.004709, longitude: 77.754909)
+        ]
+        
+        for item in sampleDPItems {
+            container.mainContext.insert(item)
+        }
+        
+        return container
+    }()
+    
+    ContentView()
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .modelContainer(container)
 }

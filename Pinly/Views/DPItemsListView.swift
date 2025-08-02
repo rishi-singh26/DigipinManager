@@ -14,53 +14,94 @@ import SwiftData
 struct DPItemsListView: View {
     let searchText: String
     
+    @Query private var favouriteDPItems: [DPItem]
     @Query private var dpItems: [DPItem]
     
     init(searchText: String) {
         self.searchText = searchText
         
-        // Create predicate for filtering by pin (id) based on searchText
+        _dpItems = getDPItemsQuery(favourite: false)
+        _favouriteDPItems = getDPItemsQuery(favourite: true)
+    }
+    
+    var body: some View {
+        if !favouriteDPItems.isEmpty {
+            Section("Favourites") {
+                ForEach(Array(favouriteDPItems), id: \.id) { item in
+                    DPItemRowView(item: item)
+                }
+            }
+        }
+        
+        if !dpItems.isEmpty {
+            Section("Pinned Items") {
+                ForEach(Array(dpItems), id: \.id) { item in
+                    DPItemRowView(item: item)
+                }
+            }
+        }
+    }
+    
+    private func getDPItemsQuery(favourite: Bool) -> Query<Array<DPItem>.Element, [DPItem]> {
         let predicate: Predicate<DPItem>
         if searchText.isEmpty {
             predicate = #Predicate<DPItem> { item in
-                !item.deleted
+                !item.deleted && item.favourite == favourite
             }
         } else {
             predicate = #Predicate<DPItem> { item in
-                !item.deleted && item.id.localizedStandardContains(searchText)
+                !item.deleted && item.id.localizedStandardContains(searchText) && item.favourite == favourite
             }
         }
         
         // Query with predicate, sorted by updatedAt descending, limited to 100 items
-        _dpItems = Query(
+        return Query(
             filter: predicate,
-            sort: [SortDescriptor(\DPItem.updatedAt, order: .reverse)],
+            sort: [SortDescriptor(\DPItem.createdAt, order: .reverse)],
             animation: .default
         )
-    }
-    
-    var body: some View {
-        ForEach(Array(dpItems.prefix(100)), id: \.id) { item in
-            DPItemRowView(item: item)
-        }
     }
 }
 
 struct DPItemRowView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var mapController: MapController
+    
     let item: DPItem
     
     var body: some View {
+        Button(action: {
+            mapController.selectedMarker = item.id
+        }, label: {
+            DPItemsListTile()
+        })
+            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                BuildFavouriteButton()
+                    .labelsHidden()
+            }
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                BuildDeleteButton()
+                    .labelsHidden()
+            }
+            .contextMenu {
+                BuildFavouriteButton(addTint: false)
+                BuildDeleteButton(addTint: false)
+            }
+    }
+    
+    @ViewBuilder
+    private func DPItemsListTile() -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Pin: \(item.pin)")
+                Text("Pin: \(item.id)")
                     .font(.headline)
                     .foregroundColor(.primary)
                 
                 Spacer()
                 
                 if item.favourite {
-                    Image(systemName: "heart.fill")
-                        .foregroundColor(.red)
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.orange)
                         .font(.caption)
                 }
             }
@@ -69,26 +110,46 @@ struct DPItemRowView: View {
                 Text(item.address)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                    .lineLimit(2)
+                    .lineLimit(1)
             }
             
             HStack {
-                Text("Lat: \(item.latitude, specifier: "%.6f")")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text("Lng: \(item.longitude, specifier: "%.6f")")
+                LatLonView(latitude: item.latitude, longitude: item.longitude, prefix: "Coordinates: ")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
                 Spacer()
                 
-                Text(item.updatedAt, style: .relative)
+                Text(item.createdAt.formatRelativeString())
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
         }
         .padding(.vertical, 2)
+    }
+    
+    @ViewBuilder
+    private func BuildDeleteButton(addTint: Bool = true) -> some View {
+        Button(role: .destructive) {
+            modelContext.delete(item)
+            try? modelContext.save()
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
+        .help("Permanently delete DIGIPIN")
+        .tint(addTint ? .red : nil)
+    }
+    
+    @ViewBuilder
+    private func BuildFavouriteButton(addTint: Bool = true) -> some View {
+        Button {
+            item.favourite.toggle()
+            try? modelContext.save()
+        } label: {
+            Label(item.favourite ? "Remove Favourite" : "Mark Favourite", systemImage: item.favourite ? "star.fill" : "star")
+        }
+        .help("Mark DIGIPIN as favourite")
+        .tint(addTint ? .orange : nil)
     }
 }
 
@@ -98,7 +159,7 @@ struct DPItemRowView: View {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "xxx-xxx-xxxx", latitude: 0, longitude: 0),
+            DPItem(pin: "xxx-xxx-xxxx", latitude: 0, longitude: 0, favourite: true),
             DPItem(pin: "yyyy-xxx-xxxx", latitude: 0, longitude: 0)
         ]
         

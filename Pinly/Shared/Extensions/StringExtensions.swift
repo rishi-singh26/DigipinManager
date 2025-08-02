@@ -91,4 +91,15 @@ extension String {
         let regex = /^[A-Za-z0-9]{3}-[A-Za-z0-9]{3}-[A-Za-z0-9]{4}$/
         return input.wholeMatch(of: regex) != nil
     }
+    
+    static func createSharePinData(address: String?, location: GeoPoint?, pin: String) -> String {
+        var result = "Pin: \(pin)\n\n"
+        if let address = address {
+            result += address
+        }
+        if let location = location {
+            result += "\n\nCoordinates: \(location.toString())"
+        }
+        return result
+    }
 }

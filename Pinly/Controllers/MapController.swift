@@ -7,6 +7,7 @@
 
 import SwiftUI
 import MapKit
+import SwiftData
 
 class MapController: ObservableObject {
     static let shared = MapController()
@@ -20,14 +21,18 @@ class MapController: ObservableObject {
     @Published var selectedMapStyle: MapStyle = .standard
     
     @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePin() } }
-    // pin for mapCenter, when map camera moves, the min for the map center is updated here
+    /// pin for mapCenter, when map camera moves, the min for the map center is updated here
     @Published var digipin: String?
-    // address data for map center
+    /// AddressSearchResult data for map center
     @Published var addressData: (AddressSearchResult?, String?)
-    // When searching for a DIGIPIN, on successful search the coordinates are saved to this
+    /// Search text
+    @Published var searchText: String = ""
+    /// When searching for a DIGIPIN, on successful search the coordinates are saved to this
     @Published var searchLocation: CLLocationCoordinate2D?
-    // address data for searched DIFIPIN
+    /// AddressSearchResult data for searched DIFIPIN
     @Published var searchAddressData: (AddressSearchResult?, String?)
+    /// Id of marker selected on map
+    @Published var selectedMarker: String?
     
     func updatePin() {
         guard let center = mapCenter else { return }
@@ -37,7 +42,7 @@ class MapController: ObservableObject {
     }
 }
 
-// MARK: - Digipin methids
+// MARK: - Digipin methods
 extension MapController {
     func getPinFrom(center: CLLocationCoordinate2D) -> String? {
         return getPinFrom(coords: Coordinate(latitude: center.latitude, longitude: center.longitude))
@@ -79,6 +84,42 @@ extension MapController {
     
     func getCoordinates(from pin : String) -> Coordinate? {
         return try? digipinService.coordinate(from: pin)
+    }
+}
+
+// MARK: - SwiftData Methods
+extension MapController {
+    func saveToPinnedList(pin: String, address: String, _ context: ModelContext) {
+        guard let coords = self.getCoordinates(from: pin) else { return }
+        let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
+        context.insert(newDPItem)
+        
+        try? context.save()
+    }
+    
+    func saveToPinnedListIfNotExist(_ pin: String, _ context: ModelContext) {
+        guard let coords = self.getCoordinates(from: pin) else { return }
+        
+        let newDPItem = DPItem(pin: pin, latitude: coords.latitude, longitude: coords.longitude)
+        
+        let predicate = #Predicate<DPItem> { model in
+            model.id == newDPItem.id
+        }
+        
+        let descriptor = FetchDescriptor<DPItem>(predicate: predicate)
+        
+        do {
+            let existingModels = try context.fetch(descriptor)
+            
+            if existingModels.isEmpty {
+                context.insert(newDPItem)
+                try context.save()
+            } else {
+                print("Model already exists")
+            }
+        } catch {
+            print("Error checking for existing model: \(error)")
+        }
     }
 }
 

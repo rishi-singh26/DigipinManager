@@ -128,6 +128,10 @@ class LocationManager: NSObject, ObservableObject {
         return await getAddressFromLocation(CLLocation(latitude: location.latitude, longitude: location.longitude))
     }
     
+    func getAddressFromLocation(_ location: CLLocationCoordinate2D) async -> (AddressSearchResult?, String?) {
+        return await getAddressFromLocation(CLLocation(latitude: location.latitude, longitude: location.longitude))
+    }
+    
     func getAddressFromLocation(_ location: CLLocation) async -> (AddressSearchResult?, String?) {
         isReverseGeocoding = true
         defer { isReverseGeocoding = false }

@@ -47,7 +47,8 @@ struct CButton {
             .font(.title2)
             .fontWeight(.semibold)
             .foregroundStyle(Color.accentColor)
-            .frame(width: 68, height: 48)
+            .frame(height: 48)
+            .frame(maxWidth: .infinity)
             .background(.gray.opacity(0.15), in: .rect(cornerRadius: 12))
     }
 }

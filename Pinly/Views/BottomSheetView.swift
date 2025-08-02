@@ -10,11 +10,11 @@ import SwiftData
 import MapKit
 
 struct BottomSheetView: View {
+    @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var viewModel: MapViewModel
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
     // Sheet properties
-    @State private var searchText: String = ""
     @FocusState private var isFocused: Bool
     @State private var showSettingsSheet: Bool = false
     @State private var showSearchBar: Bool = false
@@ -32,20 +32,18 @@ struct BottomSheetView: View {
                     }
                     
                     if let searchAddress = mapController.searchAddressData.1, showSearchBar {
-                        AddressTileBuilder(address: searchAddress, location: mapController.searchLocation, pin: searchText)
+                        AddressTileBuilder(address: searchAddress, location: mapController.searchLocation, pin: mapController.searchText)
                     }
                     
-                    DPItemsListView(searchText: searchText)
+                    DPItemsListView(searchText: mapController.searchText)
                 }
             }
         }
         .scrollContentBackground(.hidden)
         // Animating focus changes
         .animation(.interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0), value: isFocused)
-        // Update sheet height on textfield focus
-        .onChange(of: isFocused, handleFocusChange)
         // Presentation modifiers
-        .presentationDetents([.height(80), .height(350), .fraction(0.999)], selection: $viewModel.sheetDetent)
+        .presentationDetents([.height(80), .height(350)], selection: $viewModel.sheetDetent)
         .presentationBackground(.thickMaterial)
         .presentationBackgroundInteraction(.enabled)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -56,10 +54,13 @@ struct BottomSheetView: View {
         .sheet(isPresented: $showSettingsSheet) { }
         .sheet(isPresented: $showQRSheet) {
             if mapController.searchAddressData.1 != nil && showSearchBar {
-                DigipinQRView(pin: searchText)
+                DigipinQRView(pin: mapController.searchText)
             } else {
                 DigipinQRView(pin: mapController.digipin ?? "")
             }
+        }
+        .sheet(isPresented: Binding<Bool>(get: { mapController.selectedMarker != nil }, set: { _ in mapController.selectedMarker = nil })) {
+            DetailView()
         }
     }
 }
@@ -90,7 +91,7 @@ extension BottomSheetView {
                 if showSearchBar {
                     isFocused = false
                     withAnimation { showSearchBar = false }
-                    searchText = ""
+                    mapController.searchText = ""
                     mapController.searchLocation = nil
                     mapController.searchAddressData = (nil, nil)
                 } else {
@@ -113,7 +114,7 @@ extension BottomSheetView {
     
     @ViewBuilder
     private func SearchBarBuilder() -> some View {
-        TextField("Search", text: $searchText)
+        TextField("Search", text: $mapController.searchText)
             .textInputAutocapitalization(.characters)
             .font(.title3.bold())
             .focused($isFocused)
@@ -122,7 +123,7 @@ extension BottomSheetView {
             .frame(height: 48)
             .background(.gray.opacity(0.25), in: .capsule)
             .transition(.blurReplace)
-            .onChange(of: searchText) { _, new in
+            .onChange(of: mapController.searchText) { _, new in
                 if let coords = mapController.getCoordinates(from: new) {
                     mapController.updatedMapPositionAndSearchLocation(with: coords)
                     Task {
@@ -134,89 +135,56 @@ extension BottomSheetView {
     
     @ViewBuilder
     private func PinViewBuilder() -> some View {
-        Menu {
+        HStack {
             Button {
+                haptic.toggle()
                 (mapController.digipin ?? "NA").copyToClipboard()
             } label: {
-                Label("Copy", systemImage: "document.on.document")
-            }
-            Button {} label: {
-                Label("Add to list", systemImage: "list.bullet.rectangle.portrait")
-            }
-        } label: {
-            Text(mapController.digipin ?? "Out of bounds")
-                .font(.title2.bold())
-                .contentTransition(.numericText())
-                .padding(.horizontal, 20)
-                .padding(.vertical, 9)
-                .frame(maxWidth: .infinity)
-                .frame(height: 48)
+                Text(mapController.digipin ?? "Out of bounds")
+                    .font(.title2.bold())
+                    .contentTransition(.numericText())
                 //.background(.gray.opacity(0.25), in: .capsule)
-                .transition(.blurReplace)
+                    .transition(.blurReplace)
+            }
+            .buttonStyle(.plain)
+            
+            Menu {
+                Button {
+                    (mapController.digipin ?? "NA").copyToClipboard()
+                } label: {
+                    Label("Copy", systemImage: "document.on.document")
+                }
+                Button {
+                    saveCorrentLocDigipin()
+                } label: {
+                    Label("Pin to list", systemImage: "pin")
+                }
+            } label: {
+                Image(systemName: "chevron.down.circle.fill")
+                    .font(.body)
+                    .foregroundStyle(.gray)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 20)
+        .frame(height: 48)
+        .frame(maxWidth: .infinity)
     }
     
     @ViewBuilder
     private func AddressTileBuilder(address: String, location: CLLocationCoordinate2D?, pin: String) -> some View {
-        Section {
-            Text(address)
-                .lineLimit(2, reservesSpace: true)
-            Text(pin)
-            LatLonView(location, prefix: "Coordinates: ")
-            HStack {
-                ShareLink(item: getLocationDetails(address: address, location: location, pin: pin)) {
-                    CButton.RectBtnLabel(symbol: "square.and.arrow.up")
-                }
-                .buttonStyle(.plain)
-                Spacer()
-                CButton.RectBtn(symbol: "qrcode", helpText: "Share DIGIPIN details via QR code") {
-                    showQRSheet = true
-                }
-                .buttonStyle(.plain)
-                Spacer()
-                CButton.RectBtn(symbol: "list.bullet.rectangle.portrait", helpText: "Save DIGIPIN to list") {
-                    print("Hello w")
-                }
-                .buttonStyle(.plain)
-                Spacer()
-                Menu {
-                    ShareLink("Share Coordinates", item: location!.toString())
-                        .disabled(location == nil)
-//                    QRShareButton(
-//                        title: "Share coordinates QR",
-//                        inputText: location!.toString(),
-//                        titleText: "COORDINATES",
-//                        subTitleText: location!.toString()
-//                    )
-//                    .disabled(location == nil)
-                    Divider()
-                    ShareLink("Share DIGIPIN", item: pin)
-//                    QRShareButton(title: "Share DIGIPIN QR", inputText: pin, titleText: pin, subTitleText: "DIGIPIN")
-                } label: {
-                    CButton.RectBtnLabel(symbol: "ellipsis")
-                }
-                .buttonStyle(.plain)
-            }
+        DigipinTileView(address: address, location: location, pin: pin) {
+            showQRSheet = true
+        } action2: {
+            saveCorrentLocDigipin()
         }
     }
 }
 
 // MARK: - Data Functions
 extension BottomSheetView {
-    private func getLocationDetails(address: String?, location: GeoPoint?, pin: String) -> String {
-        var result = "Pin: \(pin)\n\n"
-        if let address = address {
-            result += address
-        }
-        if let location = location {
-            result += "\n\nCoordinates: \(location.toString())"
-        }
-        return result
-    }
-
     private func getCurrentLocationDetails(pin: String) -> String {
-        getLocationDetails(
+        String.createSharePinData(
             address: mapController.addressData.1,
             location: mapController.mapCenter,
             pin: pin
@@ -224,7 +192,7 @@ extension BottomSheetView {
     }
 
     private func getSearchLocationDetails(pin: String) -> String {
-        getLocationDetails(
+        String.createSharePinData(
             address: mapController.searchAddressData.1,
             location: mapController.searchLocation,
             pin: pin
@@ -235,13 +203,6 @@ extension BottomSheetView {
 
 // MARK: - View Functions
 extension BottomSheetView {
-    private func handleFocusChange(old: Bool, new: Bool) {
-        if new {
-            viewModel.sheetDetent = .fraction(0.999)
-//            searchText = "39J-49L-KM47"
-        }
-    }
-    
     private func handleGeometryProxy(proxy: GeometryProxy) -> CGFloat {
         max(min(proxy.size.height, 400 + viewModel.safeAreaBottomInset), 0)
     }
@@ -258,6 +219,16 @@ extension BottomSheetView {
         let diff = abs(newValue - oldValue)
         viewModel.animationDuration = max(min(diff / 100, 0.3), 0)
     }
+    
+    private func saveCorrentLocDigipin() {
+        guard let currentPosition = mapController.mapCenter else { return }
+        guard let pin = mapController.digipin else { return }
+        Task {
+            let result = await locationManager.getAddressFromLocation(currentPosition)
+            guard let address = result.1  else { return }
+            mapController.saveToPinnedList(pin: pin, address: address, modelContext)
+        }
+    }
 }
 
 #Preview {
@@ -266,10 +237,10 @@ extension BottomSheetView {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "XXX-XXX-XXXX", latitude: 0, longitude: 0),
-            DPItem(pin: "YYY-YYY-YYYY", latitude: 0, longitude: 0),
-            DPItem(pin: "ZZZ-ZZZ-ZZZZ", latitude: 0, longitude: 0),
-            DPItem(pin: "AAA-AAA-AAAA", latitude: 0, longitude: 0)
+            DPItem(pin: "4P3-33C-4635", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-5MMJ", latitude: 13.005222, longitude: 77.752166),
+            DPItem(pin: "4P3-33C-P7JF", latitude: 13.004407, longitude: 77.753131),
+            DPItem(pin: "4P3-33C-T9MF", latitude: 13.004709, longitude: 77.754909)
         ]
         
         for item in sampleDPItems {

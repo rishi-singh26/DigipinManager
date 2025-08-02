@@ -6,3 +6,5 @@
 //
 
 import Foundation
+
+let KSearchMarkerId = "Searched Marker"
