@@ -93,12 +93,12 @@ extension String {
     }
     
     static func createSharePinData(address: String?, location: GeoPoint?, pin: String) -> String {
-        var result = "Pin: \(pin)\n\n"
+        var result = "Pin: \(pin)\n"
         if let address = address {
             result += address
         }
         if let location = location {
-            result += "\n\nCoordinates: \(location.toString())"
+            result += "\nCoordinates: \(location.toString())"
         }
         return result
     }

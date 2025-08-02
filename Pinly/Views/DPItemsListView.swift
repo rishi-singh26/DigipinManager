@@ -54,7 +54,7 @@ struct DPItemsListView: View {
             }
         }
         
-        // Query with predicate, sorted by updatedAt descending, limited to 100 items
+        // Query with predicate, sorted by createdAt descending
         return Query(
             filter: predicate,
             sort: [SortDescriptor(\DPItem.createdAt, order: .reverse)],
@@ -65,13 +65,14 @@ struct DPItemsListView: View {
 
 struct DPItemRowView: View {
     @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject private var mapController: MapController
+    @EnvironmentObject private var mapViewModel: MapViewModel
     
     let item: DPItem
     
     var body: some View {
         Button(action: {
-            mapController.selectedMarker = item.id
+            mapViewModel.sheetDetent = mapViewModel.midDetent
+            mapViewModel.selectedMarker = item.id
         }, label: {
             DPItemsListTile()
         })
@@ -93,8 +94,9 @@ struct DPItemRowView: View {
     private func DPItemsListTile() -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("Pin: \(item.id)")
-                    .font(.headline)
+                Text(item.id)
+                    .font(.title3)
+                    .fontWeight(.semibold)
                     .foregroundColor(.primary)
                 
                 Spacer()
@@ -106,17 +108,11 @@ struct DPItemRowView: View {
                 }
             }
             
-            if !item.address.isEmpty {
+            HStack {
                 Text(item.address)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(1)
-            }
-            
-            HStack {
-                LatLonView(latitude: item.latitude, longitude: item.longitude, prefix: "Coordinates: ")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
                 
                 Spacer()
                 
@@ -159,8 +155,10 @@ struct DPItemRowView: View {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "xxx-xxx-xxxx", latitude: 0, longitude: 0, favourite: true),
-            DPItem(pin: "yyyy-xxx-xxxx", latitude: 0, longitude: 0)
+            DPItem(pin: "4P3-33C-4635", address: "Address Data", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-5MMJ", address: "Address Data", latitude: 13.005222, longitude: 77.752166),
+            DPItem(pin: "4P3-33C-P7JF", address: "Address Data", latitude: 13.004407, longitude: 77.753131),
+            DPItem(pin: "4P3-33C-T9MF", address: "Address Data", latitude: 13.004709, longitude: 77.754909)
         ]
         
         for item in sampleDPItems {
@@ -170,6 +168,9 @@ struct DPItemRowView: View {
         return container
     }()
     
-    DPItemsListView(searchText: "")
+    ContentView()
+        .environmentObject(MapController.shared)
+        .environmentObject(MapViewModel.shared)
+        .environmentObject(LocationManager.shared)
         .modelContainer(container)
 }

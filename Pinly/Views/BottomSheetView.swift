@@ -17,49 +17,45 @@ struct BottomSheetView: View {
     // Sheet properties
     @FocusState private var isFocused: Bool
     @State private var showSettingsSheet: Bool = false
-    @State private var showSearchBar: Bool = false
     @State private var haptic: Bool = false
     //
     @State private var showQRSheet = false
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                HeaderBuilder()
-                List {
-                    if let pinAddress = mapController.addressData.1, !showSearchBar, let pin = mapController.digipin {
-                        AddressTileBuilder(address: pinAddress, location: mapController.mapCenter, pin: pin)
-                    }
-                    
-                    if let searchAddress = mapController.searchAddressData.1, showSearchBar {
-                        AddressTileBuilder(address: searchAddress, location: mapController.searchLocation, pin: mapController.searchText)
-                    }
-                    
-                    DPItemsListView(searchText: mapController.searchText)
+        VStack(spacing: 0) {
+            HeaderBuilder()
+            List {
+                if let pinAddress = mapController.addressData.1, !viewModel.showSearchBar, let pin = mapController.digipin {
+                    AddressTileBuilder(address: pinAddress, location: mapController.mapCenter, pin: pin)
                 }
+                
+                if let searchAddress = mapController.searchAddressData.1, viewModel.showSearchBar {
+                    AddressTileBuilder(address: searchAddress, location: mapController.searchLocation, pin: viewModel.searchText)
+                }
+                
+                DPItemsListView(searchText: viewModel.searchText)
             }
         }
         .scrollContentBackground(.hidden)
         // Animating focus changes
         .animation(.interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0), value: isFocused)
         // Presentation modifiers
-        .presentationDetents([.height(80), .height(350)], selection: $viewModel.sheetDetent)
-        .presentationBackground(.thickMaterial)
-        .presentationBackgroundInteraction(.enabled)
+        .presentationDetents(viewModel.detents, selection: $viewModel.sheetDetent)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onGeometryChange(for: CGFloat.self, of: handleGeometryProxy, action: handleGeometryChange)
         .ignoresSafeArea()
         .interactiveDismissDisabled()
         .sensoryFeedback(.impact, trigger: haptic)
+        .onChange(of: isFocused, handleSearchFocusChange)
         .sheet(isPresented: $showSettingsSheet) { }
         .sheet(isPresented: $showQRSheet) {
-            if mapController.searchAddressData.1 != nil && showSearchBar {
-                DigipinQRView(pin: mapController.searchText)
+            if mapController.searchAddressData.1 != nil && viewModel.showSearchBar {
+                DigipinQRView(pin: viewModel.searchText)
             } else {
                 DigipinQRView(pin: mapController.digipin ?? "")
             }
         }
-        .sheet(isPresented: Binding<Bool>(get: { mapController.selectedMarker != nil }, set: { _ in mapController.selectedMarker = nil })) {
+        .sheet(isPresented: Binding<Bool>(get: { viewModel.selectedMarker != nil }, set: { _ in viewModel.selectedMarker = nil })) {
             DetailView()
         }
     }
@@ -70,16 +66,16 @@ extension BottomSheetView {
     @ViewBuilder
     private func HeaderBuilder() -> some View {
         HStack(spacing: 10) {
-            if !showSearchBar {
+            if !viewModel.showSearchBar {
                 CButton.RoundBtn(symbol: "magnifyingglass") {
                     haptic.toggle()
-                    withAnimation { showSearchBar = true }
+                    withAnimation { viewModel.showSearchBar = true }
                     isFocused = true
                 }
             }
             
             ZStack {
-                if showSearchBar {
+                if viewModel.showSearchBar {
                     SearchBarBuilder()
                 } else {
                     PinViewBuilder()
@@ -88,10 +84,10 @@ extension BottomSheetView {
             
             Button {
                 haptic.toggle()
-                if showSearchBar {
+                if viewModel.showSearchBar {
                     isFocused = false
-                    withAnimation { showSearchBar = false }
-                    mapController.searchText = ""
+                    withAnimation { viewModel.showSearchBar = false }
+                    viewModel.searchText = ""
                     mapController.searchLocation = nil
                     mapController.searchAddressData = (nil, nil)
                 } else {
@@ -99,7 +95,7 @@ extension BottomSheetView {
                 }
             } label: {
                 ZStack {
-                    if showSearchBar {
+                    if viewModel.showSearchBar {
                         CButton.RoundBtnLabel(symbol: "xmark")
                     } else {
                         CButton.RoundBtnLabel(symbol: "switch.2")
@@ -114,7 +110,7 @@ extension BottomSheetView {
     
     @ViewBuilder
     private func SearchBarBuilder() -> some View {
-        TextField("Search", text: $mapController.searchText)
+        TextField("Search", text: $viewModel.searchText)
             .textInputAutocapitalization(.characters)
             .font(.title3.bold())
             .focused($isFocused)
@@ -123,7 +119,10 @@ extension BottomSheetView {
             .frame(height: 48)
             .background(.gray.opacity(0.25), in: .capsule)
             .transition(.blurReplace)
-            .onChange(of: mapController.searchText) { _, new in
+            .onChange(of: viewModel.searchText) { _, new in
+                if new.count == 3 || new.count == 7 {
+                    viewModel.searchText += "-"
+                }
                 if let coords = mapController.getCoordinates(from: new) {
                     mapController.updatedMapPositionAndSearchLocation(with: coords)
                     Task {
@@ -181,28 +180,15 @@ extension BottomSheetView {
     }
 }
 
-// MARK: - Data Functions
-extension BottomSheetView {
-    private func getCurrentLocationDetails(pin: String) -> String {
-        String.createSharePinData(
-            address: mapController.addressData.1,
-            location: mapController.mapCenter,
-            pin: pin
-        )
-    }
-
-    private func getSearchLocationDetails(pin: String) -> String {
-        String.createSharePinData(
-            address: mapController.searchAddressData.1,
-            location: mapController.searchLocation,
-            pin: pin
-        )
-    }
-}
-
 
 // MARK: - View Functions
 extension BottomSheetView {
+    private func handleSearchFocusChange(old: Bool, new: Bool) {
+        if new {
+            viewModel.sheetDetent = viewModel.highDetent
+        }
+    }
+    
     private func handleGeometryProxy(proxy: GeometryProxy) -> CGFloat {
         max(min(proxy.size.height, 400 + viewModel.safeAreaBottomInset), 0)
     }
@@ -237,10 +223,10 @@ extension BottomSheetView {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "4P3-33C-4635", latitude: 13.006003, longitude: 77.751144),
-            DPItem(pin: "4P3-33C-5MMJ", latitude: 13.005222, longitude: 77.752166),
-            DPItem(pin: "4P3-33C-P7JF", latitude: 13.004407, longitude: 77.753131),
-            DPItem(pin: "4P3-33C-T9MF", latitude: 13.004709, longitude: 77.754909)
+            DPItem(pin: "4P3-33C-4635", address: "Address Data", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-5MMJ", address: "Address Data", latitude: 13.005222, longitude: 77.752166),
+            DPItem(pin: "4P3-33C-P7JF", address: "Address Data", latitude: 13.004407, longitude: 77.753131),
+            DPItem(pin: "4P3-33C-T9MF", address: "Address Data", latitude: 13.004709, longitude: 77.754909)
         ]
         
         for item in sampleDPItems {

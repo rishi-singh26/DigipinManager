@@ -45,6 +45,7 @@ struct DigipinTileView: View {
                 .lineLimit(2, reservesSpace: true)
                 .textSelection(.enabled)
             Text(pin)
+                .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
             HStack {
                 ShareLink(item: String.createSharePinData(address: address, location: location, pin: pin)) {

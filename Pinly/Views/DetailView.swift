@@ -10,7 +10,7 @@ import SwiftData
 import MapKit
 
 struct DetailView: View {
-    @EnvironmentObject private var mapController: MapController
+    @EnvironmentObject private var mapViewModel: MapViewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
@@ -20,13 +20,13 @@ struct DetailView: View {
     var body: some View {
         NavigationView {
             List {
-                if let selectedMarker = mapController.selectedMarker, selectedMarker != KSearchMarkerId, let dpItem = selectedItem {
+                if let selectedMarker = mapViewModel.selectedMarker, selectedMarker != KSearchMarkerId, let dpItem = selectedItem {
                     DigipinTileView(dpItem: dpItem) {
                         showQRSheet = true
                     }
                 }
             }
-            .navigationTitle(mapController.selectedMarker ?? "No Data")
+            .navigationTitle(mapViewModel.selectedMarker ?? "No Data")
             .navigationBarTitleDisplayMode(.inline)
             .scrollContentBackground(.hidden)
             .toolbar {
@@ -42,19 +42,18 @@ struct DetailView: View {
             }
         }
         .onAppear(perform: fetchItem)
-        .onChange(of: mapController.selectedMarker, { _, _ in
+        .onChange(of: mapViewModel.selectedMarker, { _, _ in
             fetchItem()
         })
         .sheet(isPresented: $showQRSheet) {
-            DigipinQRView(pin: mapController.selectedMarker ?? "")
+            DigipinQRView(pin: mapViewModel.selectedMarker ?? "")
         }
         .presentationDetents([.height(350)])
-        .presentationBackground(.thickMaterial)
         .presentationBackgroundInteraction(.enabled)
     }
     
     private func fetchItem() {
-        guard let selected = mapController.selectedMarker else {
+        guard let selected = mapViewModel.selectedMarker else {
             selectedItem = nil
             return
         }

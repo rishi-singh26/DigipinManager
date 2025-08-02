@@ -28,7 +28,7 @@ enum DPItemSchemaV1: VersionedSchema {
                 
         init(
             pin: String,
-            address: String = "",
+            address: String,
             latitude: Double,
             longitude: Double,
             favourite: Bool = false,

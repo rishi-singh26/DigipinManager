@@ -36,7 +36,6 @@ struct DigipinQRView: View {
             Spacer()
         }
         .presentationDetents([.fraction(0.65)])
-        .presentationBackground(.thickMaterial)
     }
 }
 

@@ -25,14 +25,10 @@ class MapController: ObservableObject {
     @Published var digipin: String?
     /// AddressSearchResult data for map center
     @Published var addressData: (AddressSearchResult?, String?)
-    /// Search text
-    @Published var searchText: String = ""
     /// When searching for a DIGIPIN, on successful search the coordinates are saved to this
     @Published var searchLocation: CLLocationCoordinate2D?
     /// AddressSearchResult data for searched DIFIPIN
     @Published var searchAddressData: (AddressSearchResult?, String?)
-    /// Id of marker selected on map
-    @Published var selectedMarker: String?
     
     func updatePin() {
         guard let center = mapCenter else { return }
@@ -97,10 +93,10 @@ extension MapController {
         try? context.save()
     }
     
-    func saveToPinnedListIfNotExist(_ pin: String, _ context: ModelContext) {
+    func saveToPinnedListIfNotExist(_ pin: String, address: String, _ context: ModelContext) {
         guard let coords = self.getCoordinates(from: pin) else { return }
         
-        let newDPItem = DPItem(pin: pin, latitude: coords.latitude, longitude: coords.longitude)
+        let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         
         let predicate = #Predicate<DPItem> { model in
             model.id == newDPItem.id

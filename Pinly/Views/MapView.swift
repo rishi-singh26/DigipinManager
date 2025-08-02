@@ -24,7 +24,7 @@ struct MapView: View {
     
     var body: some View {
         ZStack(alignment: .center) {
-            Map(position: $mapController.position, selection: $mapController.selectedMarker) {
+            Map(position: $mapController.position, selection: $viewModel.selectedMarker) {
                 UserAnnotation()
                 MapPolyline(points: MapController.boundPoints)
                     .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
@@ -129,10 +129,10 @@ struct MapView: View {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "4P3-33C-4635", latitude: 13.006003, longitude: 77.751144),
-            DPItem(pin: "4P3-33C-5MMJ", latitude: 13.005222, longitude: 77.752166),
-            DPItem(pin: "4P3-33C-P7JF", latitude: 13.004407, longitude: 77.753131),
-            DPItem(pin: "4P3-33C-T9MF", latitude: 13.004709, longitude: 77.754909)
+            DPItem(pin: "4P3-33C-4635", address: "Address Data", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-5MMJ", address: "Address Data", latitude: 13.005222, longitude: 77.752166),
+            DPItem(pin: "4P3-33C-P7JF", address: "Address Data", latitude: 13.004407, longitude: 77.753131),
+            DPItem(pin: "4P3-33C-T9MF", address: "Address Data", latitude: 13.004709, longitude: 77.754909)
         ]
         
         for item in sampleDPItems {
