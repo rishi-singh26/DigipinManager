@@ -41,6 +41,8 @@ struct BottomSheetView: View {
                 DPItemsListView(searchText: viewModel.searchText)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Color(UIColor.systemGroupedBackground))
         // Animating focus changes
         .animation(.interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0), value: isFocused)
         // Presentation modifiers
@@ -61,7 +63,10 @@ struct BottomSheetView: View {
         .sheet(isPresented: $mapController.showMapStyleSheet) {
             MapStylePickerView()
         }
-        .sheet(isPresented: $showSettingsSheet) { }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsView()
+                .presentationDetents([.fraction(0.999)])
+        }
         .sheet(isPresented: $showQRSheet) {
             if mapController.searchAddressData.1 != nil && viewModel.showSearchBar {
                 DigipinQRView(pin: viewModel.searchText)
@@ -134,8 +139,8 @@ extension BottomSheetView {
             .frame(height: 48)
             .background(.gray.opacity(0.25), in: .capsule)
             .transition(.blurReplace)
-            .onChange(of: viewModel.searchText) { _, new in
-                if new.count == 3 || new.count == 7 {
+            .onChange(of: viewModel.searchText) { old, new in
+                if (new.count == 3 || new.count == 7) && old.count < new.count {
                     viewModel.searchText += "-"
                 }
                 guard let coords = mapController.getCoordinates(from: new) else { return }

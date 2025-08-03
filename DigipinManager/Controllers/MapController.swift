@@ -124,25 +124,25 @@ extension MapController {
 extension MapController {
     static let boundPoints: [MKMapPoint] = [
         MKMapPoint(CLLocationCoordinate2D(
-            latitude: 2.5,
+            latitude: 38.5,
             longitude: 63.5
-        )),
-        MKMapPoint(CLLocationCoordinate2D(
-            latitude: 2.5,
-            longitude: 99.5
         )),
         MKMapPoint(CLLocationCoordinate2D(
             latitude: 38.5,
             longitude: 99.5
         )),
         MKMapPoint(CLLocationCoordinate2D(
-            latitude: 38.5,
-            longitude: 63.5
+            latitude: 2.5,
+            longitude: 99.5
         )),
         MKMapPoint(CLLocationCoordinate2D(
             latitude: 2.5,
             longitude: 63.5
-        ))
+        )),
+        MKMapPoint(CLLocationCoordinate2D(
+            latitude: 38.5,
+            longitude: 63.5
+        )),
     ]
 }
 

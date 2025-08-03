@@ -102,4 +102,10 @@ extension String {
         }
         return result
     }
+    
+    subscript(safe offset: Int) -> String? {
+        guard offset >= 0 && offset < count else { return nil }
+        let index = self.index(startIndex, offsetBy: offset)
+        return String(self[index])
+    }
 }
