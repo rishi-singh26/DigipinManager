@@ -19,12 +19,8 @@ struct DigipinQRView: View {
                 //    .font(.title3)
                 //    .fontWeight(.semibold)
                 Spacer()
-                Button{
+                CButton.XMarkBtn {
                     dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.gray)
                 }
                 .buttonStyle(.plain)
             }

@@ -30,11 +30,8 @@ struct DetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
+                    CButton.XMarkBtn {
                         dismiss()
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.gray)
                     }
                     .buttonStyle(.plain)
                 }

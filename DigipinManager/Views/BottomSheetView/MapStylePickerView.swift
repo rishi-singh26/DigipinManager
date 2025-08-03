@@ -19,14 +19,8 @@ struct MapStylePickerView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 Spacer()
-                Button {
+                CButton.XMarkBtn {
                     dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .fontWeight(.bold)
-                        .foregroundStyle(.gray)
-                        .padding(8)
-                        .background(.thinMaterial, in: .circle)
                 }
             }
             .padding()

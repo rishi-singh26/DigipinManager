@@ -51,6 +51,17 @@ struct CButton {
             .frame(maxWidth: .infinity)
             .background(.gray.opacity(0.15), in: .rect(cornerRadius: 12))
     }
+    
+    @ViewBuilder
+    static func XMarkBtn(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "xmark")
+                .fontWeight(.bold)
+                .foregroundStyle(.gray)
+                .padding(8)
+                .background(.thinMaterial, in: .circle)
+        }
+    }
 }
 
 #Preview {
