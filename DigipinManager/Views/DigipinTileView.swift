@@ -41,9 +41,11 @@ struct DigipinTileView: View {
     
     var body: some View {
         Section {
-            Text(address)
-                .lineLimit(2, reservesSpace: true)
-                .textSelection(.enabled)
+            if !address.isEmpty {
+                Text(address)
+                    .lineLimit(2, reservesSpace: true)
+                    .textSelection(.enabled)
+            }
             Text(pin)
                 .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
@@ -65,7 +67,7 @@ struct DigipinTileView: View {
                         .buttonStyle(.plain)
                 } else if let dpItem = dpItem {
                     CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Navigatie to DIGIPIN") {
-                        mapController.updatedMapPositionAndSearchLocation(with: Coordinate(latitude: dpItem.latitude, longitude: dpItem.longitude))
+                        mapController.updatedMapPosition(with: Coordinate(latitude: dpItem.latitude, longitude: dpItem.longitude))
                     }
                     .buttonStyle(.plain)
                 }

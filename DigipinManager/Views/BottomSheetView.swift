@@ -11,6 +11,9 @@ import MapKit
 
 struct BottomSheetView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.isNetworkConnected) private var isConnected
+    @Environment(\.connectionType) private var connectionType
+    
     @EnvironmentObject private var viewModel: MapViewModel
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
@@ -18,36 +21,46 @@ struct BottomSheetView: View {
     @FocusState private var isFocused: Bool
     @State private var showSettingsSheet: Bool = false
     @State private var haptic: Bool = false
+    @State private var showNotNetworkSheet = false
     //
     @State private var showQRSheet = false
     
     var body: some View {
         VStack(spacing: 0) {
             HeaderBuilder()
+            
             List {
                 if let pinAddress = mapController.addressData.1, !viewModel.showSearchBar, let pin = mapController.digipin {
                     AddressTileBuilder(address: pinAddress, location: mapController.mapCenter, pin: pin)
                 }
                 
-                if let searchAddress = mapController.searchAddressData.1, viewModel.showSearchBar {
-                    AddressTileBuilder(address: searchAddress, location: mapController.searchLocation, pin: viewModel.searchText)
+                if let location = mapController.searchLocation, viewModel.showSearchBar {
+                    AddressTileBuilder(address: mapController.searchAddressData.1 ?? "", location: location, pin: viewModel.searchText)
                 }
                 
                 DPItemsListView(searchText: viewModel.searchText)
             }
         }
-        .scrollContentBackground(.hidden)
         // Animating focus changes
         .animation(.interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0), value: isFocused)
         // Presentation modifiers
         .presentationDetents(viewModel.detents, selection: $viewModel.sheetDetent)
-        .presentationBackgroundInteraction(.enabled)
+        .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onGeometryChange(for: CGFloat.self, of: handleGeometryProxy, action: handleGeometryChange)
         .ignoresSafeArea()
         .interactiveDismissDisabled()
         .sensoryFeedback(.impact, trigger: haptic)
         .onChange(of: isFocused, handleSearchFocusChange)
+        .onChange(of: (isConnected ?? true), { _, new in
+            showNotNetworkSheet = !new
+        })
+        .sheet(isPresented: $showNotNetworkSheet) {
+            NoInternetView()
+        }
+        .sheet(isPresented: $mapController.showMapStyleSheet) {
+            MapStylePickerView()
+        }
         .sheet(isPresented: $showSettingsSheet) { }
         .sheet(isPresented: $showQRSheet) {
             if mapController.searchAddressData.1 != nil && viewModel.showSearchBar {
@@ -105,8 +118,9 @@ extension BottomSheetView {
             }
         }
         .padding(.horizontal, 10)
-        .frame(height: 80)
+        .frame(height: KHeaderHeight)
         .padding(.top, 5)
+        .background(Color(UIColor.systemGroupedBackground))
     }
     
     @ViewBuilder
@@ -124,11 +138,11 @@ extension BottomSheetView {
                 if new.count == 3 || new.count == 7 {
                     viewModel.searchText += "-"
                 }
-                if let coords = mapController.getCoordinates(from: new) {
-                    mapController.updatedMapPositionAndSearchLocation(with: coords)
-                    Task {
-                        mapController.searchAddressData = await locationManager.getAddressFromLocation(coords)
-                    }
+                guard let coords = mapController.getCoordinates(from: new) else { return }
+                mapController.updatedMapPositionAndSearchLocation(with: coords)
+                guard (isConnected ?? true) else { return }
+                Task {
+                    mapController.searchAddressData = await locationManager.getAddressFromLocation(coords)
                 }
             }
     }
@@ -144,7 +158,6 @@ extension BottomSheetView {
                     .font(.title2.bold())
                     .contentTransition(.numericText())
                 //.background(.gray.opacity(0.25), in: .capsule)
-                    .transition(.blurReplace)
             }
             .buttonStyle(.plain)
             
@@ -169,6 +182,7 @@ extension BottomSheetView {
         .padding(.horizontal, 20)
         .frame(height: 48)
         .frame(maxWidth: .infinity)
+        .transition(.blurReplace)
     }
     
     @ViewBuilder
@@ -241,5 +255,6 @@ extension BottomSheetView {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .environmentObject(InAppNotificationManager.shared)
         .modelContainer(container)
 }

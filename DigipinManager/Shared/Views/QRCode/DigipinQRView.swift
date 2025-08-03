@@ -35,6 +35,7 @@ struct DigipinQRView: View {
             
             Spacer()
         }
+        .background(Color(UIColor.systemGroupedBackground))
         .presentationDetents([.fraction(0.65)])
         .presentationBackgroundInteraction(.enabled)
     }

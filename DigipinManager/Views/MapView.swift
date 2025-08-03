@@ -19,6 +19,7 @@ struct MapView: View {
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
+    @EnvironmentObject private var notificationManager:  InAppNotificationManager
 
     @Namespace var mapScope
     
@@ -39,9 +40,11 @@ struct MapView: View {
                         .tag($0.id)
                 }
             }
-            .mapStyle(mapController.selectedMapStyle)
+            .mapStyle(mapController.selectedMapStyleType.mapStyle)
             .mapControls {
-                MapUserLocationButton(scope: mapScope)
+                if locationManager.hasLocationPermission {
+                    MapUserLocationButton(scope: mapScope)
+                }
                 MapScaleView(anchorEdge: .leading, scope: mapScope)
                 //MapPitchToggle(scope: mapScope)
                 MapCompass(scope: mapScope)
@@ -74,18 +77,30 @@ struct MapView: View {
     private func BottomFloatingToolbar() -> some View {
         VStack(spacing: 15) {
             Button {
-                print("Map")
+                mapController.showMapStyleSheet = true
             } label: {
                 Image(systemName: "map")
+                    .foregroundStyle(Color.accentColor)
             }
             .padding(.horizontal, 10)
-            Divider().frame(maxWidth: 30)
-            Button {
-                print("Location")
-            } label: {
-                Image(systemName: "location")
+            
+            if !locationManager.hasLocationPermission {
+                Divider().frame(maxWidth: 30)
+                Button {
+                    if locationManager.canAskForPermission {
+                        locationManager.requestLocationPermission()
+                    } else {
+                        if let url = URL(string: UIApplication.openSettingsURLString),
+                           UIApplication.shared.canOpenURL(url) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "location.slash")
+                        .foregroundStyle(Color.accentColor)
+                }
+                .padding(.horizontal, 10)
             }
-            .padding(.horizontal, 10)
         }
         .font(.title3)
         .foregroundStyle(Color.primary)
@@ -146,5 +161,6 @@ struct MapView: View {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .environmentObject(InAppNotificationManager.shared)
         .modelContainer(container)
 }

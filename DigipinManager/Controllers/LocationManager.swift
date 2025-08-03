@@ -26,9 +26,17 @@ class LocationManager: NSObject, ObservableObject {
     
     @Published var location: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
-    @Published var errorMessage: String?
+    @Published var errorMessage: String = ""
     @Published var isSearching = false
     @Published var isReverseGeocoding = false
+    
+    var hasLocationPermission: Bool {
+        authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways
+    }
+    
+    var canAskForPermission: Bool {
+        authorizationStatus == .notDetermined
+    }
     
     private let locationManager = CLLocationManager()
     private let geocoder = CLGeocoder()
@@ -46,11 +54,12 @@ class LocationManager: NSObject, ObservableObject {
     }
     
     func requestLocationPermission() {
+        guard canAskForPermission else { return }
         switch authorizationStatus {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .denied, .restricted:
-            errorMessage = "Location access denied. Please enable location access in Settings."
+            updateError(with: "Location access denied. Please enable location access in Settings.")
         case .authorizedWhenInUse, .authorizedAlways:
             startLocationUpdates()
         @unknown default:
@@ -60,7 +69,7 @@ class LocationManager: NSObject, ObservableObject {
     
     func startLocationUpdates() {
         guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else {
-            errorMessage = "Location permission not granted"
+            updateError(with: "Location permission not granted")
             return
         }
         
@@ -71,6 +80,16 @@ class LocationManager: NSObject, ObservableObject {
         locationManager.stopUpdatingLocation()
     }
     
+    // MARK: - Error handling
+    func updateError(with message: String) {
+        withAnimation {
+            errorMessage = message
+        }
+    }
+}
+
+// MARK: - Address related methods
+extension LocationManager {
     // MARK: - Address Search
     func searchAddress(_ query: String) async -> [AddressSearchResult] {
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [] }
@@ -118,7 +137,7 @@ class LocationManager: NSObject, ObservableObject {
             
             return searchResults
         } catch {
-            errorMessage = "Search failed: \(error.localizedDescription)"
+            updateError(with: "Search failed: \(error.localizedDescription)")
             return []
         }
     }
@@ -180,7 +199,7 @@ class LocationManager: NSObject, ObservableObject {
             return (result, formattedAddress)
             
         } catch {
-            errorMessage = "Reverse geocoding failed: \(error.localizedDescription)"
+            updateError(with: "Could not get address data from location.")
             return (nil, nil)
         }
     }
@@ -236,7 +255,7 @@ extension LocationManager: CLLocationManagerDelegate {
         Task { @MainActor in
             guard let newLocation = locations.last else { return }
             self.location = newLocation
-            self.errorMessage = nil
+            updateError(with: "")
             
             // Automatically get address for new location
             //_ = await self.getAddressFromLocation(newLocation) // Not needed
@@ -248,16 +267,16 @@ extension LocationManager: CLLocationManagerDelegate {
             if let clError = error as? CLError {
                 switch clError.code {
                 case .locationUnknown:
-                    self.errorMessage = "Unable to determine location"
+                    updateError(with: "Unable to determine location")
                 case .denied:
-                    self.errorMessage = "Location access denied"
+                    updateError(with: "Location access denied. Please enable location access in Settings.")
                 case .network:
-                    self.errorMessage = "Network error while getting location"
+                    updateError(with: "Network error while getting location")
                 default:
-                    self.errorMessage = "Location error: \(error.localizedDescription)"
+                    updateError(with: "Location error: \(error.localizedDescription)")
                 }
             } else {
-                self.errorMessage = "Failed to get location: \(error.localizedDescription)"
+                updateError(with: "Failed to get location: \(error.localizedDescription)")
             }
         }
     }
@@ -270,7 +289,7 @@ extension LocationManager: CLLocationManagerDelegate {
             case .authorizedWhenInUse, .authorizedAlways:
                 self.startLocationUpdates()
             case .denied, .restricted:
-                self.errorMessage = "Location access denied"
+                updateError(with: "Location access denied. Please enable location access in Settings.")
                 self.stopLocationUpdates()
             case .notDetermined:
                 break

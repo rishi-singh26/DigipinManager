@@ -66,13 +66,14 @@ struct DPItemsListView: View {
 struct DPItemRowView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var mapViewModel: MapViewModel
+    @EnvironmentObject private var mapController: MapController
     
     let item: DPItem
     
     var body: some View {
         Button(action: {
-            mapViewModel.sheetDetent = mapViewModel.midDetent
             mapViewModel.selectedMarker = item.id
+            mapController.updatedMapPosition(with: Coordinate(latitude: item.latitude, longitude: item.longitude))
         }, label: {
             DPItemsListTile()
         })
@@ -172,5 +173,6 @@ struct DPItemRowView: View {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .environmentObject(InAppNotificationManager.shared)
         .modelContainer(container)
 }

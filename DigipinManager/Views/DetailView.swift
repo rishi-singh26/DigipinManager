@@ -28,7 +28,6 @@ struct DetailView: View {
             }
             .navigationTitle(mapViewModel.selectedMarker ?? "No Data")
             .navigationBarTitleDisplayMode(.inline)
-            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

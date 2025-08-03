@@ -18,7 +18,9 @@ class MapController: ObservableObject {
     /// Current map center position
     @Published var position: MapCameraPosition =
         .region(MKCoordinateRegion(center: .init(latitude: 13.005677, longitude: 77.750530), latitudinalMeters: 1000, longitudinalMeters: 1000))
-    @Published var selectedMapStyle: MapStyle = .standard
+    
+    @Published var selectedMapStyleType: MapStyleType = .standard
+    @Published var showMapStyleSheet: Bool = false
     
     @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePin() } }
     /// pin for mapCenter, when map camera moves, the min for the map center is updated here
@@ -142,4 +144,18 @@ extension MapController {
             longitude: 63.5
         ))
     ]
+}
+
+enum MapStyleType: Equatable {
+    case standard
+    case imagery
+    
+    var mapStyle: MapStyle {
+        switch self {
+        case .standard:
+            return MapStyle.standard
+        case .imagery:
+            return MapStyle.imagery(elevation: .realistic)
+        }
+    }
 }
