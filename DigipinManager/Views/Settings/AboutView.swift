@@ -42,58 +42,44 @@ struct AboutView: View {
                 }
                 .help("Open help and feedback form in web browser")
                 Button {
-//                        getRating()
+                        getRating()
                 } label: {
                     Label("Rate Us", systemImage: "star")
                 }
-                .help("Give star rating to TempBox")
+                .help("Give star rating to Digipin Manager")
                 Button {
-//                        openAppStoreReviewPage()
+                        openAppStoreReviewPage()
                 } label: {
                     CustomLabel(leadingImageName: "quote.bubble", trailingImageName: "arrow.up.right", title: "Write Review on App Store")
                 }
-                .help("Write feedback for TempBox on AppStore")
+                .help("Write feedback for Digipin Manager on AppStore")
             }
             
             Section {
                 Button {
-//                        getConfirmation(url: KPrivactPolicyURL)
+                        getConfirmation(url: KPrivactPolicyURL)
                 } label: {
                     CustomLabel(leadingImageName: "lock.shield", trailingImageName: "arrow.up.right", title: "Privacy Policy")
                 }
                 .help("Open Digipin Manager privacy policy")
-                Button {
-//                        getConfirmation(url: KTermsOfServiceURL)
-                } label: {
-                    CustomLabel(leadingImageName: "list.bullet.rectangle.portrait", trailingImageName: "arrow.up.right", title: "Terms of Service")
-                }
-                .help("Open Digipin Manager terms of service")
             }
             
             Section {
                 Button {
-                    getConfirmation(url: "https://github.com/rishi-singh26/TempBox-SwiftUI")
+                    getConfirmation(url: "https://github.com/rishi-singh26/DigipinManager")
                 } label: {
                     CustomLabel(leadingImageName: "lock.open.display", trailingImageName: "arrow.up.right", title: "Source Code - Github")
                 }
                 .help("Open Digipin Manager source code in browser")
                 Button {
-                    getConfirmation(url: "https://github.com/rishi-singh26/TempBox-SwiftUI/blob/main/LICENSE")
+                    getConfirmation(url: "https://github.com/rishi-singh26/DigipinManager/blob/main/LICENSE")
                 } label: {
                     CustomLabel(leadingImageName: "checkmark.seal.text.page", trailingImageName: "arrow.up.right", title: "MIT License")
                 }
                 .help("Open Digipin Manager Open-Source license in browser")
             }
             
-//            Section("Copyright © 2025 Rishi Singh. All Rights Reserved.") {
             Section {
-                Button {
-                    getConfirmation(url: "https://tempbox.rishisingh.in")
-                } label: {
-                    CustomLabel(leadingImageName: "network", trailingImageName: "arrow.up.right", title: "https://tempbox.rishisingh.in")
-                }
-                .help("Visit Digipin Manager website in browser")
-
                 Text("Digipin Manager is lovingly developed in India. 🇮🇳")
                     .font(.caption)
             }

@@ -9,4 +9,5 @@ import Foundation
 
 let KSearchMarkerId = "Searched Marker"
 let KHeaderHeight: CGFloat = 80
-let KAppId = ""
+let KAppId = "6749537602"
+let KPrivactPolicyURL = ""

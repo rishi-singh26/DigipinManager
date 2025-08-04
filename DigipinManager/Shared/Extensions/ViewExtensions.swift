@@ -39,7 +39,7 @@ extension View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Do you wnat to open this URL?\n\(url)")
+                Text("Do you want to open this URL?\n\(url)")
             }
     }
 }
