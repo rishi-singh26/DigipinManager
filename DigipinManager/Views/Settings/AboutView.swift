@@ -98,20 +98,7 @@ struct AboutView: View {
                     .font(.caption)
             }
         }
-        .alert("Open URL?", isPresented: $showURLConfirmation) {
-            Button("Open") {
-                guard let urlString = selectedURLForConfirmation else { return }
-                guard let url = URL(string: urlString) else { return }
-                openURL(url)
-            }
-            Button("Copy") {
-                guard let urlString = selectedURLForConfirmation else { return }
-                urlString.copyToClipboard()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Do you wnat to open this URL?\n\(selectedURLForConfirmation ?? "")")
-        }
+        .withURLConfirmation($showURLConfirmation, url: selectedURLForConfirmation ?? "")
     }
     
     private func openAppStoreReviewPage() {

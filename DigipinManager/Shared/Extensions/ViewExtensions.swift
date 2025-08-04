@@ -25,4 +25,21 @@ extension View {
         self // For other platforms, return the view unchanged
 #endif
     }
+    
+    @ViewBuilder
+    func withURLConfirmation(_ presented: Binding<Bool>, url: String) -> some View {
+        self
+            .confirmationDialog("Open URL?", isPresented: presented) {
+                Button("Open") {
+                    guard let url = URL(string: url) else { return }
+                    url.open()
+                }
+                Button("Copy") {
+                    url.copyToClipboard()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Do you wnat to open this URL?\n\(url)")
+            }
+    }
 }

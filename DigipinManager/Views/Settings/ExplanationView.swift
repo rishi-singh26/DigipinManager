@@ -9,7 +9,11 @@ import SwiftUI
 import MapKit
 
 struct ExplanationView: View {
+    @Environment(\.openURL) private var openURL
+    
     @State private var viewState = ExplanationViewModel()
+    @State private var showURLConfirmation: Bool = false
+    @State private var selectedURLForConfirmation: String?
     
     var body: some View {
         ScrollView {
@@ -65,8 +69,25 @@ struct ExplanationView: View {
             .background(Color(UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
             .padding(20)
             
-            Spacer()
+            
+            Button(action: {
+                selectedURLForConfirmation = "https://www.indiapost.gov.in/digipin"
+                showURLConfirmation = true
+            }, label: {
+                HStack {
+                    Text("Learn More")
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                }
+            })
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color(UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
+            .padding(20)
+            
         }
+        .withURLConfirmation($showURLConfirmation, url: selectedURLForConfirmation ?? "")
+
     }
 }
 
