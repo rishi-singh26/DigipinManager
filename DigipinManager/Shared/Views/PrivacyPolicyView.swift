@@ -69,14 +69,12 @@ struct PrivacyPolicyView: View {
                         .bold()
                     Text("If you have any questions about this privacy policy, you may contact us at:")
                     Text("Email: [email@rishisingh.in](mailto:email@rishisingh.in)")
-                        .foregroundColor(.blue)
                 }
                 
                 Spacer()
             }
             .padding()
         }
-        .navigationTitle("Privacy Policy")
     }
 }
 

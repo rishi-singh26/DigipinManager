@@ -42,4 +42,16 @@ extension View {
                 Text("Do you want to open this URL?\n\(url)")
             }
     }
+    
+    
+    // Added for onboarding view. Custom blur slide effect
+    @ViewBuilder
+    func blurSlide(_ show: Bool) -> some View {
+        self
+            // Groups the view and adds blur to the grouped view rather then applying blur to each node view
+            .compositingGroup()
+            .blur(radius: show ? 0 : 10)
+            .opacity(show ? 1 : 0)
+            .offset(y: show ? 0 : 100)
+    }
 }

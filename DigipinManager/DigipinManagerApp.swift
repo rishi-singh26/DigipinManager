@@ -12,6 +12,7 @@ import SwiftData
 struct DigipinManagerApp: App {
     var sharedModelContainer: ModelContainer
     
+    @StateObject private var appController = AppController()
     @StateObject private var mapController = MapController()
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var locationManager = LocationManager()
@@ -39,6 +40,7 @@ struct DigipinManagerApp: App {
             ContentView()
                 .environment(\.isNetworkConnected, networkMonitor.isConnected)
                 .environment(\.connectionType, networkMonitor.connectionType)
+                .environmentObject(appController)
                 .environmentObject(mapController)
                 .environmentObject(mapViewModel)
                 .environmentObject(locationManager)

@@ -14,6 +14,7 @@ struct BottomSheetView: View {
     @Environment(\.isNetworkConnected) private var isConnected
     @Environment(\.connectionType) private var connectionType
     
+    @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var viewModel: MapViewModel
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
@@ -67,6 +68,9 @@ struct BottomSheetView: View {
             SettingsView()
                 .presentationDetents([.fraction(0.999)])
         }
+        .sheet(isPresented: $appController.showOnboarding, content: {
+            OnboardingView(tint: .accentColor, onContinue: appController.hideOnboardingSheet)
+        })
         .sheet(isPresented: $showQRSheet) {
             if mapController.searchAddressData.1 != nil && viewModel.showSearchBar {
                 DigipinQRView(pin: viewModel.searchText)

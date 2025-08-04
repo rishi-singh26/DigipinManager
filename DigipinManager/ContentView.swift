@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
@@ -34,6 +35,9 @@ struct ContentView: View {
                 notificationManager.showNotification(title: "Error!", message: newValue, type: .neutral)
             }
         })
+        .onAppear {
+            Task(operation: appController.prfomrOnbordingCheck)
+        }
         .withInAppNotifications()
     }
 }
@@ -44,4 +48,5 @@ struct ContentView: View {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .environmentObject(AppController.shared)
 }
