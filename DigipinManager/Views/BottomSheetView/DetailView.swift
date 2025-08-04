@@ -33,6 +33,7 @@ struct DetailView: View {
                     CButton.XMarkBtn {
                         dismiss()
                     }
+                    .controlSize(.small)
                     .buttonStyle(.plain)
                 }
             }

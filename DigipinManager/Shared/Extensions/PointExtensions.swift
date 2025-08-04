@@ -25,5 +25,13 @@ extension GeoPoint {
         let format = "%.\(precision)f, %.\(precision)f"
         return String(format: format, latitude, longitude)
     }
+    
+    func googleMapsURL() -> String {
+        return "https://www.google.com/maps/search/?api=1&query=\(self.latitude),\(self.longitude)"
+    }
+    
+    func appleMapsURL() -> String {
+        return "http://maps.apple.com/?ll=\(self.latitude),\(self.longitude)&q=Location"
+    }
 }
 

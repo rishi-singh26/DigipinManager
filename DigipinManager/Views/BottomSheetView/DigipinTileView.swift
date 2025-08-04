@@ -46,8 +46,8 @@ struct DigipinTileView: View {
                     .lineLimit(2, reservesSpace: true)
                     .textSelection(.enabled)
             }
-            Text(pin)
-                .textSelection(.enabled)
+            //Text(pin)
+            //    .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
             HStack {
                 ShareLink(item: String.createSharePinData(address: address, location: location, pin: pin)) {
@@ -90,6 +90,27 @@ struct DigipinTileView: View {
                         }
                         .help("\(dpItem.favourite ? "Remove": "Mark as") Favourite")
                     }
+                    
+                    Divider()
+                    
+                    Button {
+                        guard let urlStr = location?.appleMapsURL() else { return }
+                        guard let url = URL(string: urlStr) else { return }
+                        url.open()
+                    } label: {
+                        Label("Open in Apple Maps", systemImage: "map")
+                    }
+                    .disabled(location == nil)
+                    .help("Open location in apple maps")
+                    Button {
+                        guard let urlStr = location?.googleMapsURL() else { return }
+                        guard let url = URL(string: urlStr) else { return }
+                        url.open()
+                    } label: {
+                        Label("Open in Google Maps", systemImage: "map")
+                    }
+                    .disabled(location == nil)
+                    .help("Open location in google maps")
                     
                 } label: {
                     CButton.RectBtnLabel(symbol: "ellipsis")

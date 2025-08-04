@@ -48,17 +48,6 @@ extension DigipinServiceProtocol {
     }
 }
 
-// MARK: - URL Generation Utilities
-enum MapURLGenerator {
-    static func createGoogleMapsURL(latitude: Double, longitude: Double) -> String {
-        return "https://www.google.com/maps/search/?api=1&query=\(latitude),\(longitude)"
-    }
-    
-    static func createAppleMapsURL(latitude: Double, longitude: Double) -> String {
-        return "http://maps.apple.com/?ll=\(latitude),\(longitude)&q=Location"
-    }
-}
-
 // MARK: - Map URLs from DIGIPIN
 struct URLsFromDigipinIntent: AppIntent, DigipinServiceProtocol {
     static var title: LocalizedStringResource = "Map URLs for DIGIPIN"
@@ -72,8 +61,8 @@ struct URLsFromDigipinIntent: AppIntent, DigipinServiceProtocol {
         let coordinates = try validateAndGetCoordinates(from: digipin)
         
         let urls = [
-            MapURLGenerator.createGoogleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude),
-            MapURLGenerator.createAppleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude)
+            coordinates.googleMapsURL(),
+            coordinates.appleMapsURL()
         ]
         
         return .result(value: urls)
