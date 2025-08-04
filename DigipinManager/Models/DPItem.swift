@@ -17,14 +17,14 @@ enum DPItemSchemaV1: VersionedSchema {
     
     @Model
     class DPItem: Identifiable, Codable {
-        @Attribute(.unique) var id: String
-        var address: String
-        var latitude: Double
-        var longitude: Double
-        var favourite: Bool
-        var deleted: Bool
-        var createdAt: Date
-        var updatedAt: Date
+        var id: String = ""
+        var address: String = ""
+        var latitude: Double = 0.0
+        var longitude: Double = 0.0
+        var favourite: Bool = false
+        var deleted: Bool = false
+        var createdAt: Date = Date.now
+        var updatedAt: Date = Date.now
                 
         init(
             pin: String,
