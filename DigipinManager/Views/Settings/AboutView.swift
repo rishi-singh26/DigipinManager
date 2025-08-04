@@ -56,12 +56,11 @@ struct AboutView: View {
             }
             
             Section {
-                Button {
-                        getConfirmation(url: KPrivactPolicyURL)
+                NavigationLink {
+                    PrivacyPolicyView()
                 } label: {
-                    CustomLabel(leadingImageName: "lock.shield", trailingImageName: "arrow.up.right", title: "Privacy Policy")
+                    Label("Privacy Policy", systemImage: "lock.shield")
                 }
-                .help("Open Digipin Manager privacy policy")
             }
             
             Section {
