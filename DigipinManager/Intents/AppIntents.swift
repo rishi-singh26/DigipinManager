@@ -62,7 +62,7 @@ enum MapURLGenerator {
 // MARK: - Map URLs from DIGIPIN
 struct URLsFromDigipinIntent: AppIntent, DigipinServiceProtocol {
     static var title: LocalizedStringResource = "Map URLs for DIGIPIN"
-    static var description = IntentDescription("Create Google Maps and Apple Maps URLs for given DIGIPIN. Return the URLs in a list.")
+    static var description = IntentDescription("Create Map URLs for given DIGIPIN. Return the URLs in a list.")
     static var openAppWhenRun: Bool = false
     
     @Parameter(title: "DIGIPIN", description: "DIGIPIN (XXX-XXX-XXXX)")
@@ -81,38 +81,38 @@ struct URLsFromDigipinIntent: AppIntent, DigipinServiceProtocol {
 }
 
 // MARK: - Google Map URL from DIGIPIN
-struct GoogleMapURLFromDigipinIntent: AppIntent, DigipinServiceProtocol {
-    static var title: LocalizedStringResource = "Google Map URL for DIGIPIN"
-    static var description = IntentDescription("Create Google Maps URL for given DIGIPIN.")
-    static var openAppWhenRun: Bool = false
-    
-    @Parameter(title: "DIGIPIN", description: "DIGIPIN (XXX-XXX-XXXX)")
-    var digipin: String
-    
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let coordinates = try validateAndGetCoordinates(from: digipin)
-        let googleMapsURL = MapURLGenerator.createGoogleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude)
-        
-        return .result(value: googleMapsURL)
-    }
-}
+//struct GoogleMapURLFromDigipinIntent: AppIntent, DigipinServiceProtocol {
+//    static var title: LocalizedStringResource = "Google Map URL for DIGIPIN"
+//    static var description = IntentDescription("Create Google Maps URL for given DIGIPIN.")
+//    static var openAppWhenRun: Bool = false
+//    
+//    @Parameter(title: "DIGIPIN", description: "DIGIPIN (XXX-XXX-XXXX)")
+//    var digipin: String
+//    
+//    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+//        let coordinates = try validateAndGetCoordinates(from: digipin)
+//        let googleMapsURL = MapURLGenerator.createGoogleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude)
+//        
+//        return .result(value: googleMapsURL)
+//    }
+//}
 
 // MARK: - Apple Map URL from DIGIPIN
-struct AppleMapURLFromDigipinIntent: AppIntent, DigipinServiceProtocol {
-    static var title: LocalizedStringResource = "Apple Map URL for DIGIPIN"
-    static var description = IntentDescription("Create Apple Maps URL for given DIGIPIN.")
-    static var openAppWhenRun: Bool = false
-    
-    @Parameter(title: "DIGIPIN", description: "DIGIPIN (XXX-XXX-XXXX)")
-    var digipin: String
-    
-    func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let coordinates = try validateAndGetCoordinates(from: digipin)
-        let appleMapsURL = MapURLGenerator.createAppleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude)
-        
-        return .result(value: appleMapsURL)
-    }
-}
+//struct AppleMapURLFromDigipinIntent: AppIntent, DigipinServiceProtocol {
+//    static var title: LocalizedStringResource = "Apple Map URL for DIGIPIN"
+//    static var description = IntentDescription("Create Apple Maps URL for given DIGIPIN.")
+//    static var openAppWhenRun: Bool = false
+//    
+//    @Parameter(title: "DIGIPIN", description: "DIGIPIN (XXX-XXX-XXXX)")
+//    var digipin: String
+//    
+//    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+//        let coordinates = try validateAndGetCoordinates(from: digipin)
+//        let appleMapsURL = MapURLGenerator.createAppleMapsURL(latitude: coordinates.latitude, longitude: coordinates.longitude)
+//        
+//        return .result(value: appleMapsURL)
+//    }
+//}
 
 // MARK: - Coordinates from DIGIPIN
 struct CoordinatesFromDigipinIntent: AppIntent, DigipinServiceProtocol {
