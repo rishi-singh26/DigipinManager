@@ -163,7 +163,7 @@ extension BottomSheetView {
             Button {
                 haptic.toggle()
                 (mapController.digipin ?? "NA").copyToClipboard()
-                notificationManager.showNotification(title: nil, message: "Copied to clipboard")
+                notificationManager.showToast(title: "Copied to clipboard")
             } label: {
                 Text(mapController.digipin ?? "Out of bounds")
                     .font(.title2.bold())

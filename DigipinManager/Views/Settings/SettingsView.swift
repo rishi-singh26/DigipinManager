@@ -22,7 +22,7 @@ struct SettingsView: View {
                     NavigationLink {
                         ExplanationView()
                     } label: {
-                        Label("How DIGIPIN works", systemImage: "questionmark")
+                        Label("How DIGIPIN works", systemImage: "questionmark.circle")
                     }
                 }
                 

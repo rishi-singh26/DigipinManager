@@ -16,12 +16,34 @@ class InAppNotificationManager: ObservableObject {
     private init() {}
     
     // Show in-app notification
-    func showNotification(title: String?, message: String?, type: NotificationType = .info, timing: NotificationTime = .long) {
+    func showNotification(
+        title: String,
+        message: String,
+        type: NotificationType = .info,
+        timing: NotificationTime = .medium
+    ) {
         let notification = InAppNotification(
-            id: UUID(),
             title: title,
             message: message,
             type: type,
+            mode: .notification,
+            timing: timing
+        )
+        
+        // Add to queue
+        notificationQueue.append(notification)
+    }
+    
+    func showToast(
+        title: String,
+        type: NotificationType = .info,
+        timing: NotificationTime = .medium
+    ) {
+        let notification = InAppNotification(
+            title: nil,
+            message: title,
+            type: type,
+            mode: .toast,
             timing: timing
         )
         
@@ -57,16 +79,22 @@ class InAppNotificationManager: ObservableObject {
 
 // MARK: - Notification Models
 struct InAppNotification: Identifiable, Equatable {
-    let id: UUID
+    let id: UUID = UUID()
     let title: String?
     let message: String?
     let type: NotificationType
+    let mode: NotificationMode
     // Timing
     var timing: NotificationTime = .medium
     
     // View properties
     var offsetX: CGFloat = 0
     var isDeleting: Bool = false
+}
+
+enum NotificationMode {
+    case notification
+    case toast
 }
 
 enum NotificationTime: CGFloat {
@@ -113,6 +141,92 @@ struct InAppNotificationView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 10) {
+                        if notification.type != .neutral {
+                            Image(systemName: notification.type.icon)
+                                .foregroundColor(notification.type.color)
+                                .font(.title3)
+                        }
+                        Text(notification.title ?? "")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                    Text(notification.message ?? "")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer()
+                
+                DismissButton {
+                    if let delayTask {
+                        delayTask.cancel()
+                    }
+                    notificationManager.removeNotification(notification.id)
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+        }
+        .background {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.thinMaterial)
+                .stroke(.gray, lineWidth: 0.15)
+                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
+                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
+        }
+        .contentShape(.rect(cornerRadius: 14))
+        .padding(.horizontal, 10)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    let xOffset = value.translation.width < 0 ? value.translation.width : 0
+                    notificationManager.notificationQueue[index].offsetX = xOffset
+                }.onEnded { value in
+                    let xOffset = value.translation.width + (value.velocity.width / 2)
+                    
+                    if -xOffset > 200 {
+                        // Remove notification
+                        if let delayTask {
+                            delayTask.cancel()
+                        }
+                        notificationManager.removeNotification(notification.id)
+                    } else {
+                        // Reset notification position
+                        withAnimation(.snappy) {
+                            notificationManager.notificationQueue[index].offsetX = 0
+                        }
+                    }
+                }
+        )
+//        .onAppear {
+//            guard delayTask == nil else { return }
+//            delayTask = .init(block: {
+//                notificationManager.simpleRemoveNotification(notification.id)
+//            })
+//            
+//            if let delayTask {
+//                DispatchQueue.main.asyncAfter(deadline: .now() + notification.timing.rawValue, execute: delayTask)
+//            }
+//        }
+    }
+}
+
+// MARK: - Toast View
+struct InAppToastView: View {
+    @EnvironmentObject private var notificationManager:  InAppNotificationManager
+    @State private var delayTask: DispatchWorkItem?
+
+    let notification: InAppNotification
+    let index: Int
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 10) {
                 if notification.type != .neutral {
                     Image(systemName: notification.type.icon)
@@ -120,32 +234,19 @@ struct InAppNotificationView: View {
                         .font(.title2)
                 }
                 
-                VStack(alignment: .leading, spacing: 4) {
-                    if let title = notification.title {
-                        Text(title)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                    }
-                    
-                    if let message = notification.message {
-                        Text(message)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.leading)
-                    }
-                }
+                Text(notification.message ?? "")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.leading)
                 
                 Spacer()
-                Button {
+                
+                DismissButton {
                     if let delayTask {
                         delayTask.cancel()
                     }
                     notificationManager.removeNotification(notification.id)
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.gray)
                 }
-
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -194,6 +295,22 @@ struct InAppNotificationView: View {
     }
 }
 
+struct InAppNotificationSelector: View {
+    let notification: InAppNotification
+    let index: Int
+    
+    var body: some View {
+        Group {
+            switch notification.mode {
+            case .notification:
+                InAppNotificationView(notification: notification, index: index)
+            case .toast:
+                InAppToastView(notification: notification, index: index)
+            }
+        }
+    }
+}
+
 // MARK: - Notification Container
 struct NotificationContainer: View {
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
@@ -216,7 +333,7 @@ struct NotificationContainer: View {
                     let originalIndex = notificationManager.notificationQueue.firstIndex(where: { $0.id == notification.id }) ?? 0
                     let baseZIndex = Double(notificationManager.notificationQueue.count - originalIndex)
                     
-                    InAppNotificationView(notification: notification, index: originalIndex)
+                    InAppNotificationSelector(notification: notification, index: originalIndex)
                     .offset(x: notification.offsetX)
                     .visualEffect { [isExpanded] content, proxy in
                         content
@@ -251,6 +368,18 @@ struct NotificationContainer: View {
     nonisolated func scale(_ index: Int) -> CGFloat {
         let scale = min(CGFloat(index) * 0.1, 1)
         return 1 - scale
+    }
+}
+
+private struct DismissButton: View {
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(.gray)
+        }
+        .accessibilityLabel("Dismiss notification")
     }
 }
 
