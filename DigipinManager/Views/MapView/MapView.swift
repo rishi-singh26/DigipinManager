@@ -19,7 +19,6 @@ struct MapView: View {
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
-    @EnvironmentObject private var notificationManager:  InAppNotificationManager
 
     @Namespace var mapScope
     
@@ -162,6 +161,5 @@ struct MapView: View {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
-        .environmentObject(InAppNotificationManager.shared)
         .modelContainer(container)
 }

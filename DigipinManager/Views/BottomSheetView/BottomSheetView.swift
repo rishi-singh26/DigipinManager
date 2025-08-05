@@ -18,6 +18,7 @@ struct BottomSheetView: View {
     @EnvironmentObject private var viewModel: MapViewModel
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var notificationManager: InAppNotificationManager
     // Sheet properties
     @FocusState private var isFocused: Bool
     @State private var showSettingsSheet: Bool = false
@@ -162,12 +163,13 @@ extension BottomSheetView {
             Button {
                 haptic.toggle()
                 (mapController.digipin ?? "NA").copyToClipboard()
+                notificationManager.showNotification(title: nil, message: "Copied to clipboard")
             } label: {
                 Text(mapController.digipin ?? "Out of bounds")
                     .font(.title2.bold())
                     .contentTransition(.numericText())
-                //.background(.gray.opacity(0.25), in: .capsule)
             }
+            .disabled(mapController.digipin == nil)
             .buttonStyle(.plain)
             
             Menu {
@@ -186,6 +188,7 @@ extension BottomSheetView {
                     .font(.body)
                     .foregroundStyle(.gray)
             }
+            .disabled(mapController.digipin == nil)
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)

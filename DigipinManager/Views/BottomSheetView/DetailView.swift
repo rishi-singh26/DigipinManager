@@ -30,10 +30,9 @@ struct DetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    CButton.XMarkBtn {
+                    CButton.XMarkFillBtn {
                         dismiss()
                     }
-                    .controlSize(.small)
                     .buttonStyle(.plain)
                 }
             }
@@ -73,4 +72,5 @@ struct DetailView: View {
 #Preview {
     DetailView()
         .environmentObject(MapController.shared)
+        .environmentObject(MapViewModel.shared)
 }

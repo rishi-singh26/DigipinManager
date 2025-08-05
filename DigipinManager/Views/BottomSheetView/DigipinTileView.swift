@@ -7,10 +7,12 @@
 
 import SwiftUI
 import MapKit
+import SwiftData
 
 struct DigipinTileView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var mapController: MapController
+    
     var address: String
     var location: CLLocationCoordinate2D?
     var pin: String
@@ -90,6 +92,22 @@ struct DigipinTileView: View {
                         }
                         .help("\(dpItem.favourite ? "Remove": "Mark as") Favourite")
                     }
+                    
+                    Divider()
+                    
+                    Button {
+                        address.copyToClipboard()
+                    } label: {
+                        Label("Copy Address", systemImage: "document.on.document")
+                    }
+                    .help("Copy address to clipboard")
+                    Button {
+                        location?.toString().copyToClipboard()
+                    } label: {
+                        Label("Copy Coordinates", systemImage: "document.on.document")
+                    }
+                    .disabled(location == nil)
+                    .help("Copy coordinates to clipboard")
                     
                     Divider()
                     

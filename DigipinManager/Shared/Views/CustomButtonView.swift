@@ -62,6 +62,14 @@ struct CButton {
                 .background(.thinMaterial, in: .circle)
         }
     }
+    
+    @ViewBuilder
+    static func XMarkFillBtn(action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: "xmark.circle.fill")
+                .foregroundStyle(.gray)
+        }
+    }
 }
 
 #Preview {

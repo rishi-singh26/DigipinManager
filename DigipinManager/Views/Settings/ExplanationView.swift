@@ -23,7 +23,7 @@ struct ExplanationView: View {
                 .padding(.top, 25)
             
             Map(position: $viewState.position) {
-                Marker("Hello", coordinate: CLLocationCoordinate2D(latitude: 28.612906, longitude: 77.229528))
+                Marker("DIGIPIN", coordinate: CLLocationCoordinate2D(latitude: 28.612906, longitude: 77.229528))
                 ForEach(viewState.allBounds.indices) { index in
                     ForEach(viewState.allBounds[index]) { square in
                         MapPolygon(points: square.corners)
