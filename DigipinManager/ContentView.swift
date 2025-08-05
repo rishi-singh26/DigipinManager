@@ -32,7 +32,7 @@ struct ContentView: View {
         }
         .onChange(of: locationManager.errorMessage, { _, newValue in
             if !newValue.isEmpty {
-                notificationManager.showNotification(title: "Error!", message: newValue, type: .neutral)
+                notificationManager.showNotification(title: "Alert!", message: newValue, type: .neutral)
             }
         })
         .onAppear {
@@ -49,4 +49,5 @@ struct ContentView: View {
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
         .environmentObject(AppController.shared)
+        .environmentObject(InAppNotificationManager.shared)
 }

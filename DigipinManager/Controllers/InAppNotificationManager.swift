@@ -137,6 +137,9 @@ struct InAppNotificationView: View {
                 
                 Spacer()
                 Button {
+                    if let delayTask {
+                        delayTask.cancel()
+                    }
                     notificationManager.removeNotification(notification.id)
                 } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -165,10 +168,13 @@ struct InAppNotificationView: View {
                     let xOffset = value.translation.width + (value.velocity.width / 2)
                     
                     if -xOffset > 200 {
-                        // Remove toast
+                        // Remove notification
+                        if let delayTask {
+                            delayTask.cancel()
+                        }
                         notificationManager.removeNotification(notification.id)
                     } else {
-                        // Reset toast position
+                        // Reset notification position
                         withAnimation(.snappy) {
                             notificationManager.notificationQueue[index].offsetX = 0
                         }
