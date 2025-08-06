@@ -265,32 +265,42 @@ struct InAppToastView: View {
                 .onChanged { value in
                     let xOffset = value.translation.width < 0 ? value.translation.width : 0
                     notificationManager.notificationQueue[index].offsetX = xOffset
+                    cancelDelayTask()
                 }.onEnded { value in
                     let xOffset = value.translation.width + (value.velocity.width / 2)
                     
                     if -xOffset > 200 {
                         // Remove notification
-                        if let delayTask {
-                            delayTask.cancel()
-                        }
                         notificationManager.removeNotification(notification.id)
                     } else {
                         // Reset notification position
-                        withAnimation(.snappy) {
-                            notificationManager.notificationQueue[index].offsetX = 0
+                        if notificationManager.notificationQueue.indices.contains(index) {
+                            withAnimation(.snappy) {
+                                notificationManager.notificationQueue[index].offsetX = 0
+                            }
+                            createDelayTask()
                         }
                     }
                 }
         )
-        .onAppear {
-            guard delayTask == nil else { return }
-            delayTask = .init(block: {
-                notificationManager.simpleRemoveNotification(notification.id)
-            })
-            
-            if let delayTask {
-                DispatchQueue.main.asyncAfter(deadline: .now() + notification.timing.rawValue, execute: delayTask)
-            }
+        .onAppear(perform: createDelayTask)
+    }
+    
+    private func createDelayTask() {
+        guard delayTask == nil else { return }
+        delayTask = .init(block: {
+            notificationManager.simpleRemoveNotification(notification.id)
+        })
+        
+        if let delayTask {
+            DispatchQueue.main.asyncAfter(deadline: .now() + notification.timing.rawValue, execute: delayTask)
+        }
+    }
+    
+    private func cancelDelayTask() {
+        if let delayTask {
+            delayTask.cancel()
+            self.delayTask = nil
         }
     }
 }
