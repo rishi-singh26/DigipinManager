@@ -17,7 +17,7 @@ struct PrivacyPolicyView: View {
                     .bold()
                     .padding(.top)
                 
-                Text("Effective Date: 4th August, 2025")
+                Text("Effective Date: 6th August, 2025")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
@@ -53,14 +53,14 @@ struct PrivacyPolicyView: View {
                     Text("4. Children’s Privacy")
                         .font(.title2)
                         .bold()
-                    Text("This app does not collect data from children under the age of 13. As no personal data is collected, it complies with privacy laws applicable to children, including COPPA and GDPR-K.")
+                    Text("This app does not collect data from children under the age of 13. As no personal data is collected, it complies with privacy laws applicable to children.")
                 }
                 
                 Group {
                     Text("5. Changes to This Policy")
                         .font(.title2)
                         .bold()
-                    Text("This privacy policy may be updated from time to time. Any future changes will be posted on this page. If there are material changes, we will notify users through the App Store listing or an in-app message.")
+                    Text("This Privacy Policy may be updated at any time without prior notice. Any revisions will be posted with an updated effective date. Continued use of the application signifies your acceptance of any changes.")
                 }
                 
                 Group {
