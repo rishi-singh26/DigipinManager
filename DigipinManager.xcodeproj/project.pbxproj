@@ -296,7 +296,7 @@
 				INFOPLIST_FILE = DigipinManager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Digipin Manager";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location access is needed to show your position on the map. Location data never leaves your device.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Digipin Manager needs location access to show DIGIPIN at your location.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -333,7 +333,7 @@
 				INFOPLIST_FILE = DigipinManager/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Digipin Manager";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location access is needed to show your position on the map. Location data never leaves your device.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Digipin Manager needs location access to show DIGIPIN at your location.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
