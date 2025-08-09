@@ -112,8 +112,7 @@ extension BottomSheetView {
                     isFocused = false
                     withAnimation { viewModel.showSearchBar = false }
                     viewModel.searchText = ""
-                    mapController.searchLocation = nil
-                    mapController.searchAddressData = (nil, nil)
+                    mapController.closeSearch()
                 } else {
                     showSettingsSheet = true
                 }
@@ -220,12 +219,15 @@ extension BottomSheetView {
         if (new.count == 3 || new.count == 7) && old.count < new.count {
             viewModel.searchText += "-"
         }
-        guard let coords = mapController.getCoordinates(from: new) else { return }
-        mapController.updatedMapPositionAndSearchLocation(with: coords)
-        guard (isConnected ?? true) else { return }
-        Task {
-            let searchAdderss = try? await AddressUtility.shared.getAddressFromLocation(coords)
-            mapController.searchAddressData = searchAdderss ?? (nil, nil)
+        if let coords = mapController.getCoordinates(from: new) {
+            mapController.updatedMapPositionAndSearchLocation(with: coords)
+            guard (isConnected ?? true) else { return }
+            Task {
+                let searchAdderss = try? await AddressUtility.shared.getAddressFromLocation(coords)
+                mapController.searchAddressData = searchAdderss ?? (nil, nil)
+            }
+        } else {
+            mapController.updateSearchLocation(with: nil)
         }
     }
     
@@ -235,7 +237,11 @@ extension BottomSheetView {
         Task {
             let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
             guard let address = result?.1  else { return }
-            mapController.saveToPinnedList(pin: pin, address: address, modelContext)
+            let status = mapController.saveToPinnedList(pin: pin, address: address, modelContext)
+            notificationManager.showToast(
+                title: status ? "Added to pinned list" : "Something went wrong!",
+                type: status ? .info : .error
+            )
         }
     }
 }

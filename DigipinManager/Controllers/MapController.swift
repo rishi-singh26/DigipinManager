@@ -16,8 +16,7 @@ class MapController: ObservableObject {
     
     // Map Properties
     /// Current map center position
-    @Published var position: MapCameraPosition =
-        .region(MKCoordinateRegion(center: .init(latitude: 13.005677, longitude: 77.750530), latitudinalMeters: 1000, longitudinalMeters: 1000))
+    @Published var position: MapCameraPosition = .automatic
     
     @Published var selectedMapStyleType: MapStyleType = .standard
     @Published var showMapStyleSheet: Bool = false
@@ -28,7 +27,7 @@ class MapController: ObservableObject {
     /// AddressSearchResult data for map center
     @Published var addressData: (AddressSearchResult?, String?)
     /// When searching for a DIGIPIN, on successful search the coordinates are saved to this
-    @Published var searchLocation: CLLocationCoordinate2D?
+    @Published private(set) var searchLocation: CLLocationCoordinate2D?
     /// AddressSearchResult data for searched DIFIPIN
     @Published var searchAddressData: (AddressSearchResult?, String?)
     
@@ -76,36 +75,42 @@ extension MapController {
         withAnimation {
             position = .region(MKCoordinateRegion(
                 center: .init(latitude: coords.latitude, longitude: coords.longitude),
-                latitudinalMeters: 1000,
-                longitudinalMeters: 1000
+                span: position.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
             ))
         }
     }
     
     func updatedMapPositionAndSearchLocation(with coords: Coordinate) {
-        searchLocation = .init(latitude: coords.latitude, longitude: coords.longitude)
-        withAnimation(.interpolatingSpring(duration: 0.5, bounce: 0, initialVelocity: 0)) {
-            position = .region(MKCoordinateRegion(
-                center: .init(latitude: coords.latitude, longitude: coords.longitude),
-                latitudinalMeters: 1000,
-                longitudinalMeters: 1000
-            ))
-        }
+        updateSearchLocation(with: .init(latitude: coords.latitude, longitude: coords.longitude))
+        updatedMapPosition(with: coords)
     }
     
     func getCoordinates(from pin : String) -> Coordinate? {
         return try? digipinService.coordinate(from: pin)
     }
+    
+    func closeSearch() {
+        withAnimation {
+            searchLocation = nil
+            searchAddressData = (nil, nil)
+        }
+    }
+    
+    func updateSearchLocation(with location: CLLocationCoordinate2D?) {
+        withAnimation {
+            searchLocation = location
+        }
+    }
 }
 
 // MARK: - SwiftData Methods
 extension MapController {
-    func saveToPinnedList(pin: String, address: String, _ context: ModelContext) {
-        guard let coords = self.getCoordinates(from: pin) else { return }
+    func saveToPinnedList(pin: String, address: String, _ context: ModelContext) -> Bool {
+        guard let coords = self.getCoordinates(from: pin) else { return false }
         let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         context.insert(newDPItem)
         
-        try? context.save()
+        return (try? context.save()) != nil
     }
     
     func saveToPinnedListIfNotExist(_ pin: String, address: String, _ context: ModelContext) {
