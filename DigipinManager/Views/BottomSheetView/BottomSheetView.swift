@@ -169,29 +169,22 @@ extension BottomSheetView {
                     .font(.title2.bold())
                     .contentTransition(.numericText())
             }
+            .help("Copy DIGIPIN")
             .disabled(mapController.digipin == nil)
             .buttonStyle(.plain)
             
-            Menu {
-                Button {
-                    (mapController.digipin ?? "NA").copyToClipboard()
-                } label: {
-                    Label("Copy", systemImage: "document.on.document")
-                }
-                Button {
-                    saveCorrentLocDigipin()
-                } label: {
-                    Label("Pin to list", systemImage: "pin")
-                }
+            Spacer()
+            
+            Button {
+                saveCorrentLocDigipin()
             } label: {
-                Image(systemName: "chevron.down.circle.fill")
+                Image(systemName: "pin")
                     .font(.body)
-                    .foregroundStyle(.gray)
             }
+            .help("Add DIGIPIN to pinned list")
             .disabled(mapController.digipin == nil)
-            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 30)
         .frame(height: 48)
         .frame(maxWidth: .infinity)
         .transition(.blurReplace)
