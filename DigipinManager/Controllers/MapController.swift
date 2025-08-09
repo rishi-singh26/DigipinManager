@@ -105,6 +105,17 @@ extension MapController {
 
 // MARK: - SwiftData Methods
 extension MapController {
+    func saveCurrentLocDigipin(_ modelContext: ModelContext) async -> (Bool, String?) {
+        guard let currentPosition = mapCenter else { return (false, nil) }
+        guard let pin = digipin else { return (false, nil) }
+
+        let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
+        guard let address = result?.1 else { return (false, nil) }
+
+        return saveToPinnedListIfNotExist(pin: pin, address: address, modelContext)
+    }
+
+    
     func saveToPinnedList(pin: String, address: String, _ context: ModelContext) -> Bool {
         guard let coords = self.getCoordinates(from: pin) else { return false }
         let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
@@ -113,30 +124,27 @@ extension MapController {
         return (try? context.save()) != nil
     }
     
-    func saveToPinnedListIfNotExist(_ pin: String, address: String, _ context: ModelContext) {
-        guard let coords = self.getCoordinates(from: pin) else { return }
-        
-        let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
-        
-        let predicate = #Predicate<DPItem> { model in
-            model.id == newDPItem.id
-        }
-        
+    func saveToPinnedListIfNotExist(pin: String, address: String, _ context: ModelContext) -> (Bool, String?) {
+        guard let coords = getCoordinates(from: pin) else { return (false, nil) }
+
+        let newItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
+        let predicate = #Predicate<DPItem> { $0.id == newItem.id }
         let descriptor = FetchDescriptor<DPItem>(predicate: predicate)
-        
+
         do {
-            let existingModels = try context.fetch(descriptor)
-            
-            if existingModels.isEmpty {
-                context.insert(newDPItem)
+            if try context.fetch(descriptor).isEmpty {
+                context.insert(newItem)
                 try context.save()
+                return (true, nil)
             } else {
-                print("Model already exists")
+                return (false, "Already pinned")
             }
         } catch {
-            print("Error checking for existing model: \(error)")
+            // Handle error if needed
+            return (false, nil)
         }
     }
+
 }
 
 extension MapController {

@@ -232,16 +232,13 @@ extension BottomSheetView {
     }
     
     private func saveCorrentLocDigipin() {
-        guard let currentPosition = mapController.mapCenter else { return }
-        guard let pin = mapController.digipin else { return }
         Task {
-            let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
-            guard let address = result?.1  else { return }
-            let status = mapController.saveToPinnedList(pin: pin, address: address, modelContext)
-            notificationManager.showToast(
-                title: status ? "Added to pinned list" : "Something went wrong!",
-                type: status ? .info : .error
-            )
+            let (status, message) = await mapController.saveCurrentLocDigipin(modelContext)
+            if status {
+                notificationManager.showToast(title: "Added to pinned list")
+            } else if let message {
+                notificationManager.showToast(title: message, type: .warning)
+            }
         }
     }
 }
