@@ -17,7 +17,7 @@ struct ContentView: View {
     @State private var hasUpdatedMap = true
     
     var body: some View {
-        ZStack(alignment: .top) {
+        NotificationRootView {
             MapView()
                 .onAppear {
                     locationManager.requestLocationPermission()
@@ -29,16 +29,16 @@ struct ContentView: View {
                         locationManager.stopLocationUpdates()
                     }
                 }
+                .onChange(of: locationManager.errorMessage, { _, newValue in
+                    if !newValue.isEmpty {
+                        notificationManager.showNotification(title: "Alert!", message: newValue)
+                    }
+                })
+                .onAppear {
+                    Task(operation: appController.prfomrOnbordingCheck)
+                }
+            //.withInAppNotifications()
         }
-        .onChange(of: locationManager.errorMessage, { _, newValue in
-            if !newValue.isEmpty {
-                notificationManager.showNotification(title: "Alert!", message: newValue)
-            }
-        })
-        .onAppear {
-            Task(operation: appController.prfomrOnbordingCheck)
-        }
-        .withInAppNotifications()
     }
 }
 

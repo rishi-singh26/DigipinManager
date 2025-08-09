@@ -17,7 +17,6 @@ struct DigipinManagerApp: App {
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var locationManager = LocationManager()
     @StateObject private var networkMonitor = NetworkMonitor()
-    @StateObject private var notificationManager = InAppNotificationManager.shared
     
     init() {
         let container: ModelContainer
@@ -44,7 +43,7 @@ struct DigipinManagerApp: App {
                 .environmentObject(mapController)
                 .environmentObject(mapViewModel)
                 .environmentObject(locationManager)
-                .environmentObject(notificationManager)
+                .environmentObject(InAppNotificationManager.shared)
         }
         .modelContainer(sharedModelContainer)
     }
