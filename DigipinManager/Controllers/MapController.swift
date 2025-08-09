@@ -22,7 +22,7 @@ class MapController: ObservableObject {
     @Published var selectedMapStyleType: MapStyleType = .standard
     @Published var showMapStyleSheet: Bool = false
     
-    @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePin() } }
+    @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
     /// pin for mapCenter, when map camera moves, the min for the map center is updated here
     @Published var digipin: String?
     /// AddressSearchResult data for map center
@@ -32,10 +32,23 @@ class MapController: ObservableObject {
     /// AddressSearchResult data for searched DIFIPIN
     @Published var searchAddressData: (AddressSearchResult?, String?)
     
-    func updatePin() {
+    func updatePinAndAddress() {
         guard let center = mapCenter else { return }
+        let newDigipin = getPinFrom(center: center)
+        
         withAnimation(.bouncy) {
-            digipin = getPinFrom(center: center)
+            digipin = newDigipin
+        }
+        
+        guard newDigipin != nil else { return } // Do not updated address if DIGIPIN is not available
+        
+        Task {
+            guard let result = try? await AddressUtility.shared.getAddressFromLocation(center) else { return }
+            await MainActor.run {
+                withAnimation {
+                    addressData = result
+                }
+            }
         }
     }
 }

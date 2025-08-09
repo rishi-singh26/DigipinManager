@@ -144,17 +144,7 @@ extension BottomSheetView {
             .frame(height: 48)
             .background(.gray.opacity(0.25), in: .capsule)
             .transition(.blurReplace)
-            .onChange(of: viewModel.searchText) { old, new in
-                if (new.count == 3 || new.count == 7) && old.count < new.count {
-                    viewModel.searchText += "-"
-                }
-                guard let coords = mapController.getCoordinates(from: new) else { return }
-                mapController.updatedMapPositionAndSearchLocation(with: coords)
-                guard (isConnected ?? true) else { return }
-                Task {
-                    mapController.searchAddressData = await locationManager.getAddressFromLocation(coords)
-                }
-            }
+            .onChange(of: viewModel.searchText, handleSearchTextChange)
     }
     
     @ViewBuilder
@@ -226,12 +216,25 @@ extension BottomSheetView {
         viewModel.animationDuration = max(min(diff / 100, 0.3), 0)
     }
     
+    private func handleSearchTextChange(old: String, new: String) {
+        if (new.count == 3 || new.count == 7) && old.count < new.count {
+            viewModel.searchText += "-"
+        }
+        guard let coords = mapController.getCoordinates(from: new) else { return }
+        mapController.updatedMapPositionAndSearchLocation(with: coords)
+        guard (isConnected ?? true) else { return }
+        Task {
+            let searchAdderss = try? await AddressUtility.shared.getAddressFromLocation(coords)
+            mapController.searchAddressData = searchAdderss ?? (nil, nil)
+        }
+    }
+    
     private func saveCorrentLocDigipin() {
         guard let currentPosition = mapController.mapCenter else { return }
         guard let pin = mapController.digipin else { return }
         Task {
-            let result = await locationManager.getAddressFromLocation(currentPosition)
-            guard let address = result.1  else { return }
+            let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
+            guard let address = result?.1  else { return }
             mapController.saveToPinnedList(pin: pin, address: address, modelContext)
         }
     }

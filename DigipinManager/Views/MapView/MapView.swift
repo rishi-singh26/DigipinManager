@@ -124,16 +124,7 @@ struct MapView: View {
     }
     
     private func handleCameraMoveEnd(context: MapCameraUpdateContext) {
-        let center = context.region.center
-        mapController.mapCenter = center
-        Task {
-            let result = await locationManager.getAddressFromLocation(
-                Coordinate(latitude: center.latitude, longitude: center.longitude)
-            )
-            withAnimation {
-                mapController.addressData = result
-            }
-        }
+        mapController.mapCenter = context.region.center
     }
 }
 
