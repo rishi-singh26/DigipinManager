@@ -14,11 +14,19 @@ struct CustomLabel: View {
     var trailingImageName: String?
     /// label title
     var title: String?
+    /// lable title color
+    var titleColor: Color = .primary
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
             if let leadingImageName = leadingImageName, let title = title {
-                Label(title, systemImage: leadingImageName)
+                Label {
+                    Text(title)
+                        .foregroundStyle(titleColor)
+                } icon: {
+                    Image(systemName: leadingImageName)
+                }
+
             } else {
                 if let leadingImageName = leadingImageName {
                     Image(systemName: leadingImageName)
@@ -27,7 +35,7 @@ struct CustomLabel: View {
                 if let title = title {
                     Text(title)
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(titleColor)
                 }
             }
             Spacer()
@@ -47,5 +55,11 @@ struct CustomLabel: View {
         CustomLabel(trailingImageName: "arrow.up.right", title: "Open Source Code")
         CustomLabel(leadingImageName: "lock.open.display", title: "Open Source Code")
         CustomLabel(leadingImageName: "lock.open.display", trailingImageName: "arrow.up.right")
+        
+        Button {
+            
+        } label: {
+            CustomLabel(leadingImageName: "lock.open.display", trailingImageName: "arrow.up.right", title: "Hello")
+        }
     }
 }

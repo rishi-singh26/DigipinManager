@@ -38,21 +38,18 @@ struct AboutView: View {
                 } label: {
                     CustomLabel(leadingImageName: "text.bubble", trailingImageName: "arrow.up.right", title: "Help & Feedback")
                 }
-                .buttonStyle(.plain)
                 .help("Open help and feedback form in web browser")
                 Button {
                         getRating()
                 } label: {
-                    Label("Rate Us", systemImage: "star")
+                    CustomLabel(leadingImageName: "star", title: "Rate Us")
                 }
-                .buttonStyle(.plain)
                 .help("Give star rating to Digipin Manager")
                 Button {
                         openAppStoreReviewPage()
                 } label: {
                     CustomLabel(leadingImageName: "quote.bubble", trailingImageName: "arrow.up.right", title: "Write Review on App Store")
                 }
-                .buttonStyle(.plain)
                 .help("Write feedback for Digipin Manager on AppStore")
             }
             
@@ -70,14 +67,12 @@ struct AboutView: View {
                 } label: {
                     CustomLabel(leadingImageName: "lock.open.display", trailingImageName: "arrow.up.right", title: "Source Code - Github")
                 }
-                .buttonStyle(.plain)
                 .help("Open Digipin Manager source code in browser")
                 Button {
                     getConfirmation(url: "https://github.com/rishi-singh26/DigipinManager/blob/main/LICENSE")
                 } label: {
                     CustomLabel(leadingImageName: "checkmark.seal.text.page", trailingImageName: "arrow.up.right", title: "MIT License")
                 }
-                .buttonStyle(.plain)
                 .help("Open Digipin Manager Open-Source license in browser")
             }
             
@@ -119,5 +114,5 @@ struct AboutView: View {
 
 
 #Preview {
-    AboutView()
+    SettingsView()
 }
