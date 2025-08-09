@@ -52,7 +52,44 @@ struct DigipinTileView: View {
             //    .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
             HStack {
-                ShareLink(item: String.createSharePinData(address: address, location: location, pin: pin)) {
+                Menu {
+                    ShareLink("Share Coordinates", item: location!.toString())
+                        .disabled(location == nil)
+                    ShareLink("Share Address", item: address)
+                    ShareLink("Share DIGIPIN", item: pin)
+                    ShareLink(
+                        "Share All Three",
+                        item: String.createSharePinData(address: address, location: location, pin: pin)
+                    )
+                    
+                    Divider()
+                    
+                    Button {
+                        location?.toString().copyToClipboard()
+                    } label: {
+                        Label("Copy Coordinates", systemImage: "document.on.document")
+                    }
+                    .disabled(location == nil)
+                    .help("Copy coordinates to clipboard")
+                    Button {
+                        address.copyToClipboard()
+                    } label: {
+                        Label("Copy Address", systemImage: "document.on.document")
+                    }
+                    .help("Copy address to clipboard")
+                    Button {
+                        pin.copyToClipboard()
+                    } label: {
+                        Label("Copy DIGIPIN", systemImage: "document.on.document")
+                    }
+                    .help("Copy DIGIPIN to clipboard")
+                    Button {
+                        String.createSharePinData(address: address, location: location, pin: pin).copyToClipboard()
+                    } label: {
+                        Label("Copy All Three", systemImage: "document.on.document")
+                    }
+                    .help("Copy DIGIPIN to clipboard")
+                } label: {
                     CButton.RectBtnLabel(symbol: "square.and.arrow.up")
                 }
                 .buttonStyle(.plain)
@@ -77,38 +114,12 @@ struct DigipinTileView: View {
                 Spacer()
                 
                 Menu {
-                    ShareLink("Share Coordinates", item: location!.toString())
-                        .disabled(location == nil)
-                    ShareLink("Share DIGIPIN", item: pin)
-                    
-                    Divider()
-                    
-                    if let dpItem = dpItem {
-                        Button {
-                            dpItem.favourite.toggle()
-                            try? modelContext.save()
-                        } label: {
-                            Label("\(dpItem.favourite ? "Remove": "Mark as") Favourite", systemImage: dpItem.favourite ? "star.fill": "star")
-                        }
-                        .help("\(dpItem.favourite ? "Remove": "Mark as") Favourite")
-                    }
-                    
-                    Divider()
-                    
                     Button {
-                        address.copyToClipboard()
+                        SpeechManager.shared.speakDigipin(pin)
                     } label: {
-                        Label("Copy Address", systemImage: "document.on.document")
+                        Label("Speak Aloud", systemImage: "speaker.wave.2")
                     }
-                    .help("Copy address to clipboard")
-                    Button {
-                        location?.toString().copyToClipboard()
-                    } label: {
-                        Label("Copy Coordinates", systemImage: "document.on.document")
-                    }
-                    .disabled(location == nil)
-                    .help("Copy coordinates to clipboard")
-                    
+
                     Divider()
                     
                     Button {
@@ -140,5 +151,10 @@ struct DigipinTileView: View {
 }
 
 #Preview {
-//    DigipinTileView()
+    ContentView()
+        .environmentObject(AppController.shared)
+        .environmentObject(MapController.shared)
+        .environmentObject(MapViewModel.shared)
+        .environmentObject(LocationManager.shared)
+        .environmentObject(InAppNotificationManager.shared)
 }
