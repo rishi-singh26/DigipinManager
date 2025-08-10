@@ -31,6 +31,7 @@ struct AudioControlNotificationView: View {
                     Text(notification.title ?? "")
                         .font(.title)
                         .fontWeight(.semibold)
+                        .fontDesign(.rounded)
                         .foregroundColor(.primary)
                     
                     Spacer()
@@ -49,11 +50,11 @@ struct AudioControlNotificationView: View {
                     } label: {
                         Label(isPlaying ? "Stop" : "Play", systemImage: isPlaying ? "stop.circle" : "play.circle")
                             .font(.title3)
-                            .fontWeight(.semibold)
+                            .fontWeight(.medium)
                             .foregroundStyle(.white)
                             .padding(.vertical, 10)
                             .frame(maxWidth: .infinity)
-                            .background(isPlaying ? .red : .orange, in: .rect(cornerRadius: 15))
+                            .background(isPlaying ? .red : .orange, in: .capsule)
                     }
                     .buttonStyle(.plain)
                     
@@ -62,11 +63,11 @@ struct AudioControlNotificationView: View {
                     Button(action: removeNotification) {
                         Text("Done")
                             .font(.title3)
-                            .fontWeight(.semibold)
+                            .fontWeight(.medium)
                             .foregroundStyle(.white)
                             .padding(.vertical, 10)
                             .frame(maxWidth: .infinity)
-                            .background(Color.accentColor, in: .rect(cornerRadius: 15))
+                            .background(Color.accentColor, in: .capsule)
                     }
                     .buttonStyle(.plain)
                 }
@@ -75,12 +76,12 @@ struct AudioControlNotificationView: View {
             .frame(maxWidth: .infinity)
         }
         .background {
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
+            RoundedRectangle(cornerRadius: 40, style: .continuous)
                 .fill(.thinMaterial)
                 .shadow(color: .black.opacity(0.2), radius: 50, x: -3, y: -3)
                 .shadow(color: .black.opacity(0.2), radius: 50, x: 3, y: 3)
         }
-        .contentShape(.rect(cornerRadius: 30))
+        .contentShape(.rect(cornerRadius: 40))
         .padding(.horizontal, 10)
         .gesture(gesture)
         .onAppear {

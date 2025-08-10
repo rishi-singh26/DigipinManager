@@ -17,24 +17,54 @@ class SpeechManager: NSObject, AVSpeechSynthesizerDelegate {
     private var pauseContinuation: CheckedContinuation<Void, Never>?
     private var stopped = false
 
+    // Track whether we're in the middle of a multi-part speech
+    private var multiPartSpeechActive = false
+
     private override init() {
         super.init()
         synthesizer.delegate = self
     }
-    
+
+    // MARK: - Audio Session Management
+    private func configureAudioSessionForSpeech() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback) // takes over audio
+            try session.setActive(true)
+        } catch {
+            print("Failed to set audio session: \(error)")
+        }
+    }
+
+    private func deactivateAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            print("Failed to deactivate audio session: \(error)")
+        }
+    }
+
+    // MARK: - Public Speech Methods
     func speak(_ text: String, language: String = "en-IN") {
+        configureAudioSessionForSpeech()
+        multiPartSpeechActive = false
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: language)
-        utterance.rate = 0.05  // You can adjust speed
+        utterance.rate = 0.05
         synthesizer.speak(utterance)
     }
-    
+
     func speakDigipin(_ text: String, language: String = "en-IN") {
-        let modifiedText = text.replacingOccurrences(of: "-", with: "").split(separator: "").joined(separator: " - ")
+        configureAudioSessionForSpeech()
+        multiPartSpeechActive = false
+        let modifiedText = text.replacingOccurrences(of: "-", with: "")
+            .split(separator: "")
+            .joined(separator: " - ")
         print(modifiedText)
         let utterance = AVSpeechUtterance(string: modifiedText)
         utterance.voice = AVSpeechSynthesisVoice(language: language)
-        utterance.rate = 0.01  // You can adjust speed
+        utterance.rate = 0.01
         synthesizer.speak(utterance)
     }
 
@@ -45,6 +75,8 @@ class SpeechManager: NSObject, AVSpeechSynthesizerDelegate {
             return
         }
 
+        configureAudioSessionForSpeech()
+        multiPartSpeechActive = true
         stopped = false
 
         for char in pin {
@@ -75,6 +107,8 @@ class SpeechManager: NSObject, AVSpeechSynthesizerDelegate {
         }
 
         stopped = false
+        multiPartSpeechActive = false
+        deactivateAudioSession()
     }
 
     func stop() {
@@ -90,14 +124,21 @@ class SpeechManager: NSObject, AVSpeechSynthesizerDelegate {
             pauseContinuation = nil
             cont.resume()
         }
+
+        multiPartSpeechActive = false
+        deactivateAudioSession()
     }
 
     // MARK: - AVSpeechSynthesizerDelegate
-    // Delegate methods must be nonisolated in Swift 6
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor in
             self.speechContinuation?.resume()
             self.speechContinuation = nil
+
+            // Only deactivate if not in the middle of multi-part speech
+            if !self.multiPartSpeechActive {
+                self.deactivateAudioSession()
+            }
         }
     }
 
@@ -105,6 +146,10 @@ class SpeechManager: NSObject, AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             self.speechContinuation?.resume()
             self.speechContinuation = nil
+
+            if !self.multiPartSpeechActive {
+                self.deactivateAudioSession()
+            }
         }
     }
 }
