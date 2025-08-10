@@ -14,6 +14,8 @@ struct DigipinTileView: View {
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var notification: InAppNotificationManager
     
+    @FocusState private var noteFieldFocus: Bool
+    
     var address: String
     var location: CLLocationCoordinate2D?
     var pin: String
@@ -52,6 +54,11 @@ struct DigipinTileView: View {
             //Text(pin)
             //    .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
+            
+            if let digipinItem = dpItem {
+                NotesFiedlBuilder(digipinItem: digipinItem)
+            }
+            
             HStack {
                 ShareMenuBuilder()
                 
@@ -83,6 +90,25 @@ struct DigipinTileView: View {
                 OptionsMenuBuilder()
             }
         }
+    }
+    
+    @ViewBuilder
+    private func NotesFiedlBuilder(digipinItem: DPItem) -> some View {
+        let binding = Binding<String>(get: {
+            digipinItem.note ?? ""
+        }, set: { newVal in
+            if newVal.last == "\n" {
+                var copiedVal = newVal
+                copiedVal.removeLast()
+                digipinItem.note = copiedVal
+                noteFieldFocus = false
+            } else {
+                digipinItem.note = newVal
+            }
+        })
+        TextField("Note", text: binding, axis: .vertical)
+        .focused($noteFieldFocus)
+        .submitLabel(.done)
     }
     
     @ViewBuilder

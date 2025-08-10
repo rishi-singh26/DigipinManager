@@ -50,6 +50,9 @@ struct DetailView: View {
             }
         }
         .onAppear(perform: fetchItem)
+        .onDisappear {
+            try? modelContext.save()
+        }
         .onChange(of: mapViewModel.selectedMarker, { _, _ in
             fetchItem()
         })

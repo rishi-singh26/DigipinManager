@@ -8,9 +8,6 @@
 import SwiftUI
 import SwiftData
 
-import SwiftUI
-import SwiftData
-
 struct DPItemsListView: View {
     let searchText: String
     
@@ -95,6 +92,11 @@ struct DPItemRowView: View {
     private func DPItemsListTile() -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
+                if item.favourite {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                }
                 Text(item.id)
                     .font(.title3)
                     .fontWeight(.semibold)
@@ -102,10 +104,12 @@ struct DPItemRowView: View {
                 
                 Spacer()
                 
-                if item.favourite {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.orange)
-                        .font(.caption)
+                if let note = item.note {
+                    Text(note)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .frame(width: item.favourite ? 140 : 150, alignment: .trailing)
                 }
             }
             
@@ -156,7 +160,7 @@ struct DPItemRowView: View {
         
         // Add sample data
         let sampleDPItems = [
-            DPItem(pin: "4P3-33C-4635", address: "Address Data", latitude: 13.006003, longitude: 77.751144),
+            DPItem(pin: "4P3-33C-4635", note: "This is a long note. Only some data will be shown in the List", address: "Address Data", latitude: 13.006003, longitude: 77.751144),
             DPItem(pin: "4P3-33C-5MMJ", address: "Address Data", latitude: 13.005222, longitude: 77.752166),
             DPItem(pin: "4P3-33C-P7JF", address: "Address Data", latitude: 13.004407, longitude: 77.753131),
             DPItem(pin: "4P3-33C-T9MF", address: "Address Data", latitude: 13.004709, longitude: 77.754909)
@@ -170,6 +174,7 @@ struct DPItemRowView: View {
     }()
     
     ContentView()
+        .environmentObject(AppController.shared)
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)

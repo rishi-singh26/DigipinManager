@@ -209,6 +209,7 @@ struct CoordinateToPinNotificationView: View {
                 Spacer()
                 
                 CButton.RectBtn(symbol: "document.on.document", helpText: "Copy DIGIPIN") {
+                    focusedField = nil
                     notificationManager.copiedToClipboardToast()
                     convertor.output.uppercased().copyToClipboard()
                 }
@@ -264,6 +265,7 @@ struct CoordinateToPinNotificationView: View {
     
     private func handleSpeech() {
         guard convertor.output.count > 10 else { return }
+        focusedField = nil
         let _ = notificationManager.showAudioController(title: convertor.output)
     }
 }
