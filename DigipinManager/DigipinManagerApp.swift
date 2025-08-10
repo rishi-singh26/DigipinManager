@@ -13,7 +13,7 @@ struct DigipinManagerApp: App {
     var sharedModelContainer: ModelContainer
     
     @StateObject private var appController = AppController()
-    @StateObject private var mapController = MapController()
+    @StateObject private var mapController = MapController.shared
     @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var locationManager = LocationManager()
     @StateObject private var networkMonitor = NetworkMonitor()
