@@ -1,5 +1,5 @@
 //
-//  InAppToastView.swift
+//  InAppNotificationView.swift
 //  DigipinManager
 //
 //  Created by Rishi Singh on 09/08/25.
@@ -7,47 +7,59 @@
 
 import SwiftUI
 
-struct InAppToastView: View {
+struct InAppNotificationView: View {
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
     @State private var delayTask: DispatchWorkItem?
-
+    
     let notification: InAppNotification
     let index: Int
-    var autoDismiss: Bool = true
+    var autoDismiss: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 10) {
-                if notification.type != .neutral {
-                    Image(systemName: notification.type.icon)
-                        .foregroundColor(notification.type.color)
-                        .font(.title2)
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 10) {
+                        if notification.type != .neutral {
+                            Image(systemName: notification.type.icon)
+                                .foregroundColor(notification.type.color)
+                                .font(.title3)
+                        }
+                        Text(notification.title ?? "")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                    Text(notification.message ?? "")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
                 }
-                
-                Text(notification.message ?? "")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
                 
                 Spacer()
                 
-                DismissButton {
+                Button {
                     if let delayTask {
                         delayTask.cancel()
                     }
                     notificationManager.removeNotification(notification.id)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.gray)
                 }
+                .accessibilityLabel("Dismiss notification")
             }
             .padding()
             .frame(maxWidth: .infinity)
         }
         .background {
-            Capsule()
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(.thinMaterial)
                 .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
                 .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
         }
-        .contentShape(.capsule)
+        .contentShape(.rect(cornerRadius: 14))
         .padding(.horizontal, 10)
         .gesture(gesture)
         .onAppear(perform: createDelayTask)
@@ -98,10 +110,9 @@ struct InAppToastView: View {
 }
 
 #Preview {
-    InAppToastView(
+    InAppNotificationView(
         notification: .init(title: "Alert", message: "This is a notification", type: .info, mode: .toast),
         index: 0,
-        autoDismiss: false
     )
     .environmentObject(InAppNotificationManager.shared)
 }
