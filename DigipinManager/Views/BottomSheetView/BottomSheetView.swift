@@ -36,8 +36,8 @@ struct BottomSheetView: View {
                     AddressTileBuilder(address: pinAddress, location: mapController.mapCenter, pin: pin)
                 }
                 
-                if let location = mapController.searchLocation, viewModel.showSearchBar {
-                    AddressTileBuilder(address: mapController.searchAddressData.1 ?? "", location: location, pin: viewModel.searchText)
+                if let location = appController.searchLocation, viewModel.showSearchBar {
+                    AddressTileBuilder(address: appController.searchAddressData.1 ?? "", location: location, pin: viewModel.searchText)
                 }
                 
                 DPItemsListView(searchText: viewModel.searchText)
@@ -73,7 +73,7 @@ struct BottomSheetView: View {
             OnboardingView(tint: .accentColor, onContinue: appController.hideOnboardingSheet)
         })
         .sheet(isPresented: $showQRSheet) {
-            if mapController.searchAddressData.1 != nil && viewModel.showSearchBar {
+            if appController.searchAddressData.1 != nil && viewModel.showSearchBar {
                 DigipinQRView(pin: viewModel.searchText)
             } else {
                 DigipinQRView(pin: mapController.digipin ?? "")
@@ -112,7 +112,7 @@ extension BottomSheetView {
                     isFocused = false
                     withAnimation { viewModel.showSearchBar = false }
                     viewModel.searchText = ""
-                    mapController.closeSearch()
+                    appController.closeSearch()
                 } else {
                     showSettingsSheet = true
                 }
@@ -220,14 +220,15 @@ extension BottomSheetView {
             viewModel.searchText += "-"
         }
         if let coords = mapController.getCoordinates(from: new) {
-            mapController.updatedMapPositionAndSearchLocation(with: coords)
+            mapController.updatedMapPosition(with: coords)
+            appController.updateSearchLocation(with: coords)
             guard (isConnected ?? true) else { return }
             Task {
                 let searchAdderss = try? await AddressUtility.shared.getAddressFromLocation(coords)
-                mapController.searchAddressData = searchAdderss ?? (nil, nil)
+                appController.searchAddressData = searchAdderss ?? (nil, nil)
             }
         } else {
-            mapController.updateSearchLocation(with: nil)
+            appController.updateSearchLocation(with: nil)
         }
     }
     

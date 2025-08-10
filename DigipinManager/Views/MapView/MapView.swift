@@ -17,6 +17,7 @@ struct MapView: View {
     @Query private var dpItems: [DPItem]
     
     @EnvironmentObject private var mapController: MapController
+    @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
 
@@ -28,7 +29,7 @@ struct MapView: View {
                 UserAnnotation()
                 MapPolyline(points: MapController.boundPoints)
                     .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
-                if let searchLocation = mapController.searchLocation {
+                if let searchLocation = appController.searchLocation {
                     Marker("Searched DIGIPIN", coordinate: searchLocation)
                         .mapItemDetailSelectionAccessory(.sheet)
                 }

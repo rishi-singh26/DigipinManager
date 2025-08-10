@@ -35,10 +35,6 @@ class MapController: ObservableObject {
     @Published private(set) var digipin: String?
     /// AddressSearchResult data for map center
     @Published private(set) var addressData: (AddressSearchResult?, String?)
-    /// When searching for a DIGIPIN, on successful search the coordinates are saved to this
-    @Published private(set) var searchLocation: CLLocationCoordinate2D?
-    /// AddressSearchResult data for searched DIFIPIN
-    @Published var searchAddressData: (AddressSearchResult?, String?)
     
     private init() {
         // Initialize position with default values first
@@ -72,19 +68,6 @@ class MapController: ObservableObject {
         }
     }
     
-    func closeSearch() {
-        withAnimation {
-            searchLocation = nil
-            searchAddressData = (nil, nil)
-        }
-    }
-    
-    func updateSearchLocation(with location: CLLocationCoordinate2D?) {
-        withAnimation {
-            searchLocation = location
-        }
-    }
-    
     func updatedMapPosition(with pin: String) {
         guard let coords = getCoordinates(from: pin) else { return }
         updatedMapPosition(with: coords)
@@ -101,11 +84,6 @@ class MapController: ObservableObject {
                 span: position.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
             ))
         }
-    }
-    
-    func updatedMapPositionAndSearchLocation(with coords: Coordinate) {
-        updateSearchLocation(with: .init(latitude: coords.latitude, longitude: coords.longitude))
-        updatedMapPosition(with: coords)
     }
     
     /// Clean up resources
