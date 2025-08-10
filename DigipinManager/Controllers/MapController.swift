@@ -30,7 +30,7 @@ class MapController: ObservableObject {
     @Published var selectedMapStyleType: MapStyleType = .standard
     @Published var showMapStyleSheet: Bool = false
     
-    @Published private(set) var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
+    @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
     /// pin for mapCenter, when map camera moves, the min for the map center is updated here
     @Published private(set) var digipin: String?
     /// AddressSearchResult data for map center
@@ -141,7 +141,6 @@ extension MapController {
 extension MapController {
     /// Call this method when the map region changes to save the current position (debounced)
     func onMapRegionChanged(_ region: MKCoordinateRegion) {
-        mapCenter = region.center
         position = .region(region)
         
         // Cancel previous timer if it exists

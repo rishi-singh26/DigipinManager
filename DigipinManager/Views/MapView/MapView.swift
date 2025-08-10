@@ -125,7 +125,7 @@ struct MapView: View {
     }
     
     private func handleCameraMoveEnd(context: MapCameraUpdateContext) {
-        mapController.onMapRegionChanged(context.region)
+        mapController.mapCenter = context.region.center
     }
 }
 
