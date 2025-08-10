@@ -219,7 +219,7 @@ extension BottomSheetView {
         if (new.count == 3 || new.count == 7) && old.count < new.count {
             viewModel.searchText += "-"
         }
-        if let coords = mapController.getCoordinates(from: new) {
+        if let coords = DigipinUtility.getCoordinates(from: new) {
             mapController.updatedMapPosition(with: coords)
             appController.updateSearchLocation(with: coords)
             guard (isConnected ?? true) else { return }

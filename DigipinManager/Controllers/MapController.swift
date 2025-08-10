@@ -50,7 +50,7 @@ class MapController: ObservableObject {
     
     func updatePinAndAddress() {
         guard let center = mapCenter else { return }
-        let newDigipin = getPinFrom(center: center)
+        let newDigipin = DigipinUtility.getPinFrom(center: center)
         
         withAnimation(.bouncy) {
             digipin = newDigipin
@@ -69,7 +69,7 @@ class MapController: ObservableObject {
     }
     
     func updatedMapPosition(with pin: String) {
-        guard let coords = getCoordinates(from: pin) else { return }
+        guard let coords = DigipinUtility.getCoordinates(from: pin) else { return }
         updatedMapPosition(with: coords)
     }
     
@@ -175,23 +175,6 @@ extension MapController {
     }
 }
 
-// MARK: - Digipin methods
-extension MapController {
-    private static let digipinService = DIGIPIN()
-    
-    func getPinFrom(center: CLLocationCoordinate2D) -> String? {
-        return getPinFrom(coords: Coordinate(latitude: center.latitude, longitude: center.longitude))
-    }
-    
-    func getPinFrom(coords: Coordinate) -> String? {
-        return try? Self.digipinService.generateDIGIPIN(latitude: coords.latitude, longitude: coords.longitude)
-    }
-    
-    func getCoordinates(from pin : String) -> Coordinate? {
-        return try? Self.digipinService.coordinate(from: pin)
-    }
-}
-
 // MARK: - SwiftData Methods
 extension MapController {
     func saveCurrentLocDigipin(_ modelContext: ModelContext) async -> (Bool, String?) {
@@ -206,7 +189,7 @@ extension MapController {
 
     
     func saveToPinnedList(pin: String, address: String, _ context: ModelContext) -> Bool {
-        guard let coords = self.getCoordinates(from: pin) else { return false }
+        guard let coords = DigipinUtility.getCoordinates(from: pin) else { return false }
         let newDPItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         context.insert(newDPItem)
         
@@ -214,7 +197,7 @@ extension MapController {
     }
     
     func saveToPinnedListIfNotExist(pin: String, address: String, _ context: ModelContext) -> (Bool, String?) {
-        guard let coords = getCoordinates(from: pin) else { return (false, nil) }
+        guard let coords = DigipinUtility.getCoordinates(from: pin) else { return (false, nil) }
 
         let newItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         let predicate = #Predicate<DPItem> { $0.id == newItem.id }
