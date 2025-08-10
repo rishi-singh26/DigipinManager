@@ -12,6 +12,7 @@ import SwiftData
 struct DigipinTileView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var mapController: MapController
+    @EnvironmentObject private var notification: InAppNotificationManager
     
     var address: String
     var location: CLLocationCoordinate2D?
@@ -52,47 +53,13 @@ struct DigipinTileView: View {
             //    .textSelection(.enabled)
             LatLonView(location, prefix: "Coordinates: ")
             HStack {
-                Menu {
-                    ShareLink("Share Coordinates", item: location!.toString())
-                        .disabled(location == nil)
-                    ShareLink("Share Address", item: address)
-                    ShareLink("Share DIGIPIN", item: pin)
-                    ShareLink(
-                        "Share All Three",
-                        item: String.createSharePinData(address: address, location: location, pin: pin)
-                    )
-                    
-                    Divider()
-                    
-                    Button {
-                        location?.toString().copyToClipboard()
-                    } label: {
-                        Label("Copy Coordinates", systemImage: "document.on.document")
-                    }
-                    .disabled(location == nil)
-                    .help("Copy coordinates to clipboard")
-                    Button {
-                        address.copyToClipboard()
-                    } label: {
-                        Label("Copy Address", systemImage: "document.on.document")
-                    }
-                    .help("Copy address to clipboard")
-                    Button {
-                        pin.copyToClipboard()
-                    } label: {
-                        Label("Copy DIGIPIN", systemImage: "document.on.document")
-                    }
-                    .help("Copy DIGIPIN to clipboard")
-                    Button {
-                        String.createSharePinData(address: address, location: location, pin: pin).copyToClipboard()
-                    } label: {
-                        Label("Copy All Three", systemImage: "document.on.document")
-                    }
-                    .help("Copy DIGIPIN to clipboard")
-                } label: {
-                    CButton.RectBtnLabel(symbol: "square.and.arrow.up")
+                ShareMenuBuilder()
+                
+                Button(action: handleSpeech) {
+                    CButton.RectBtnLabel(symbol: "speaker.wave.2")
                 }
                 .buttonStyle(.plain)
+                .help("Speak DIGIPIN aloud")
                 
                 Spacer()
                 
@@ -113,40 +80,86 @@ struct DigipinTileView: View {
                 
                 Spacer()
                 
-                Menu {
-                    Button {
-                        SpeechManager.shared.speakDigipin(pin)
-                    } label: {
-                        Label("Speak Aloud", systemImage: "speaker.wave.2")
-                    }
-
-                    Divider()
-                    
-                    Button {
-                        guard let urlStr = location?.appleMapsURL() else { return }
-                        guard let url = URL(string: urlStr) else { return }
-                        url.open()
-                    } label: {
-                        Label("Open in Apple Maps", systemImage: "map")
-                    }
-                    .disabled(location == nil)
-                    .help("Open location in apple maps")
-                    Button {
-                        guard let urlStr = location?.googleMapsURL() else { return }
-                        guard let url = URL(string: urlStr) else { return }
-                        url.open()
-                    } label: {
-                        Label("Open in Google Maps", systemImage: "map")
-                    }
-                    .disabled(location == nil)
-                    .help("Open location in google maps")
-                    
-                } label: {
-                    CButton.RectBtnLabel(symbol: "ellipsis")
-                }
-                .buttonStyle(.plain)
+                OptionsMenuBuilder()
             }
         }
+    }
+    
+    @ViewBuilder
+    private func ShareMenuBuilder() -> some View {
+        Menu {
+            ShareLink("Share Coordinates", item: location!.toString())
+                .disabled(location == nil)
+            ShareLink("Share Address", item: address)
+            ShareLink("Share DIGIPIN", item: pin)
+            ShareLink(
+                "Share All Three",
+                item: String.createSharePinData(address: address, location: location, pin: pin)
+            )
+            
+            Divider()
+            
+            Button {
+                location?.toString().copyToClipboard()
+            } label: {
+                Label("Copy Coordinates", systemImage: "document.on.document")
+            }
+            .disabled(location == nil)
+            .help("Copy coordinates to clipboard")
+            Button {
+                address.copyToClipboard()
+            } label: {
+                Label("Copy Address", systemImage: "document.on.document")
+            }
+            .help("Copy address to clipboard")
+            Button {
+                pin.copyToClipboard()
+            } label: {
+                Label("Copy DIGIPIN", systemImage: "document.on.document")
+            }
+            .help("Copy DIGIPIN to clipboard")
+            Button {
+                String.createSharePinData(address: address, location: location, pin: pin).copyToClipboard()
+            } label: {
+                Label("Copy All Three", systemImage: "document.on.document")
+            }
+            .help("Copy DIGIPIN to clipboard")
+        } label: {
+            CButton.RectBtnLabel(symbol: "square.and.arrow.up")
+        }
+        .buttonStyle(.plain)
+    }
+    
+    @ViewBuilder
+    private func OptionsMenuBuilder() -> some View {
+        Menu {
+            Button {
+                guard let urlStr = location?.appleMapsURL() else { return }
+                guard let url = URL(string: urlStr) else { return }
+                url.open()
+            } label: {
+                Label("Open in Apple Maps", systemImage: "map")
+            }
+            .disabled(location == nil)
+            .help("Open location in apple maps")
+            Button {
+                guard let urlStr = location?.googleMapsURL() else { return }
+                guard let url = URL(string: urlStr) else { return }
+                url.open()
+            } label: {
+                Label("Open in Google Maps", systemImage: "map")
+            }
+            .disabled(location == nil)
+            .help("Open location in google maps")
+            
+        } label: {
+            CButton.RectBtnLabel(symbol: "ellipsis")
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func handleSpeech() {
+        let _ = notification.showAudioController(title: pin)
     }
 }
 

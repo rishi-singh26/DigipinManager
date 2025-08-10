@@ -51,6 +51,27 @@ class InAppNotificationManager: ObservableObject {
         notificationQueue.append(notification)
     }
     
+    @discardableResult
+    func showAudioController(title: String) -> UUID {
+        Task { @MainActor in
+            SpeechManager.shared.stop()
+        }
+        notificationQueue.removeAll(where: { $0.mode == .audioContoll })
+        let id = UUID()
+        let notification = InAppNotification(
+            id: id,
+            title: title,
+            message: nil,
+            type: .neutral,
+            mode: .audioContoll,
+            timing: .long
+        )
+        
+        // Add to queue
+        notificationQueue.append(notification)
+        return id
+    }
+    
     // Clear all notifications (current and queued)
     func clearAllNotifications() {
         notificationQueue.removeAll()
@@ -79,7 +100,7 @@ class InAppNotificationManager: ObservableObject {
 
 // MARK: - Notification Models
 struct InAppNotification: Identifiable, Equatable {
-    let id: UUID = UUID()
+    var id: UUID = UUID()
     let title: String?
     let message: String?
     let type: NotificationType
@@ -95,6 +116,7 @@ struct InAppNotification: Identifiable, Equatable {
 enum NotificationMode {
     case notification
     case toast
+    case audioContoll
 }
 
 enum NotificationTime: CGFloat {
@@ -131,180 +153,6 @@ enum NotificationType {
     }
 }
 
-// MARK: - In-App Notification View
-struct InAppNotificationView: View {
-    @EnvironmentObject private var notificationManager:  InAppNotificationManager
-    @State private var delayTask: DispatchWorkItem?
-
-    let notification: InAppNotification
-    let index: Int
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 10) {
-                        if notification.type != .neutral {
-                            Image(systemName: notification.type.icon)
-                                .foregroundColor(notification.type.color)
-                                .font(.title3)
-                        }
-                        Text(notification.title ?? "")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
-                    
-                    Text(notification.message ?? "")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer()
-                
-                DismissButton {
-                    if let delayTask {
-                        delayTask.cancel()
-                    }
-                    notificationManager.removeNotification(notification.id)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-        }
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.thinMaterial)
-                .stroke(.gray, lineWidth: 0.15)
-                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
-                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
-        }
-        .contentShape(.rect(cornerRadius: 14))
-        .padding(.horizontal, 10)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    let xOffset = value.translation.width < 0 ? value.translation.width : 0
-                    notificationManager.notificationQueue[index].offsetX = xOffset
-                }.onEnded { value in
-                    let xOffset = value.translation.width + (value.velocity.width / 2)
-                    
-                    if -xOffset > 200 {
-                        // Remove notification
-                        if let delayTask {
-                            delayTask.cancel()
-                        }
-                        notificationManager.removeNotification(notification.id)
-                    } else {
-                        // Reset notification position
-                        withAnimation(.snappy) {
-                            notificationManager.notificationQueue[index].offsetX = 0
-                        }
-                    }
-                }
-        )
-//        .onAppear {
-//            guard delayTask == nil else { return }
-//            delayTask = .init(block: {
-//                notificationManager.simpleRemoveNotification(notification.id)
-//            })
-//            
-//            if let delayTask {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + notification.timing.rawValue, execute: delayTask)
-//            }
-//        }
-    }
-}
-
-// MARK: - Toast View
-struct InAppToastView: View {
-    @EnvironmentObject private var notificationManager:  InAppNotificationManager
-    @State private var delayTask: DispatchWorkItem?
-
-    let notification: InAppNotification
-    let index: Int
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 10) {
-                if notification.type != .neutral {
-                    Image(systemName: notification.type.icon)
-                        .foregroundColor(notification.type.color)
-                        .font(.title2)
-                }
-                
-                Text(notification.message ?? "")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.leading)
-                
-                Spacer()
-                
-                DismissButton {
-                    if let delayTask {
-                        delayTask.cancel()
-                    }
-                    notificationManager.removeNotification(notification.id)
-                }
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-        }
-        .background {
-            Capsule()
-                .fill(.thinMaterial)
-                .stroke(.gray, lineWidth: 0.15)
-                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
-                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
-        }
-        .contentShape(.capsule)
-        .padding(.horizontal, 10)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    let xOffset = value.translation.width < 0 ? value.translation.width : 0
-                    notificationManager.notificationQueue[index].offsetX = xOffset
-                    cancelDelayTask()
-                }.onEnded { value in
-                    let xOffset = value.translation.width + (value.velocity.width / 2)
-                    
-                    if -xOffset > 200 {
-                        // Remove notification
-                        notificationManager.removeNotification(notification.id)
-                    } else {
-                        // Reset notification position
-                        if notificationManager.notificationQueue.indices.contains(index) {
-                            withAnimation(.snappy) {
-                                notificationManager.notificationQueue[index].offsetX = 0
-                            }
-                            createDelayTask()
-                        }
-                    }
-                }
-        )
-        .onAppear(perform: createDelayTask)
-    }
-    
-    private func createDelayTask() {
-        guard delayTask == nil else { return }
-        delayTask = .init(block: {
-            notificationManager.simpleRemoveNotification(notification.id)
-        })
-        
-        if let delayTask {
-            DispatchQueue.main.asyncAfter(deadline: .now() + notification.timing.rawValue, execute: delayTask)
-        }
-    }
-    
-    private func cancelDelayTask() {
-        if let delayTask {
-            delayTask.cancel()
-            self.delayTask = nil
-        }
-    }
-}
-
 struct InAppNotificationSelector: View {
     let notification: InAppNotification
     let index: Int
@@ -316,6 +164,8 @@ struct InAppNotificationSelector: View {
                 InAppNotificationView(notification: notification, index: index)
             case .toast:
                 InAppToastView(notification: notification, index: index)
+            case .audioContoll:
+                AudioControlNotificationView(notification: notification, index: index)
             }
         }
     }
@@ -324,7 +174,7 @@ struct InAppNotificationSelector: View {
 // MARK: - Notification Container
 struct NotificationContainer: View {
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
-    @State private var isExpanded: Bool = false
+    @State private var isExpanded: Bool = true
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -365,7 +215,7 @@ struct NotificationContainer: View {
         .animation(.spring(), value: notificationManager.notificationQueue)
         .onChange(of: notificationManager.notificationQueue.isEmpty) { oldValue, newValue in
             if newValue {
-                isExpanded = false
+                isExpanded = true
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -382,7 +232,7 @@ struct NotificationContainer: View {
     }
 }
 
-private struct DismissButton: View {
+struct DismissButton: View {
     let action: () -> Void
     
     var body: some View {
@@ -424,18 +274,24 @@ struct NotificationRootView<Content: View>: View {
 
 fileprivate class PassthroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard let hitView = super.hitTest(point, with: event),
-              let rootView = rootViewController?.view
-        else { return nil }
-        
-        // Check for touches on the subviews
+        guard let rootView = rootViewController?.view else { return nil }
+
+        // Check each subview in the overlay from front to back
         for subview in rootView.subviews.reversed() {
             let pointInSubview = subview.convert(point, from: rootView)
-            if subview.hitTest(pointInSubview, with: event) == subview {
-                return hitView
+            if let hitView = subview.hitTest(pointInSubview, with: event) {
+                
+                // If the tapped view (or its ancestor) is a UIControl (Button, Toggle, etc.), allow the tap
+                if hitView is UIControl || hitView.gestureRecognizers?.isEmpty == false {
+                    return hitView
+                }
+                
+                // Otherwise, block it (return something in the overlay so it doesn't fall through)
+                return rootView
             }
         }
-        
+
+        // No overlay view hit → allow touch to pass to underlying content
         return nil
     }
 }
