@@ -10,6 +10,7 @@ import SwiftData
 import MapKit
 
 struct DetailView: View {
+    @EnvironmentObject private var notificationManager: InAppNotificationManager
     @EnvironmentObject private var mapViewModel: MapViewModel
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -34,6 +35,17 @@ struct DetailView: View {
                         dismiss()
                     }
                     .buttonStyle(.plain)
+                }
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        (mapViewModel.selectedMarker ?? "").copyToClipboard()
+                        notificationManager.showToast(title: "Copied to clipboard")
+                    } label: {
+                        Image(systemName: "document.on.document")
+                            .font(.body)
+                    }
+
                 }
             }
         }
