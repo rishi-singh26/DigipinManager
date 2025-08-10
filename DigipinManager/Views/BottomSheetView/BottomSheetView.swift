@@ -12,7 +12,6 @@ import MapKit
 struct BottomSheetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.isNetworkConnected) private var isConnected
-    @Environment(\.connectionType) private var connectionType
     
     @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var viewModel: MapViewModel
@@ -106,22 +105,31 @@ extension BottomSheetView {
                 }
             }
             
-            Button {
-                haptic.toggle()
+            ZStack {
                 if viewModel.showSearchBar {
-                    isFocused = false
-                    withAnimation { viewModel.showSearchBar = false }
-                    viewModel.searchText = ""
-                    appController.closeSearch()
-                } else {
-                    showSettingsSheet = true
-                }
-            } label: {
-                ZStack {
-                    if viewModel.showSearchBar {
+                    Button {
+                        haptic.toggle()
+                        isFocused = false
+                        withAnimation { viewModel.showSearchBar = false }
+                        viewModel.searchText = ""
+                        appController.closeSearch()
+                    } label: {
                         CButton.RoundBtnLabel(symbol: "xmark")
-                    } else {
-                        CButton.RoundBtnLabel(symbol: "switch.2")
+                    }
+                } else {
+                    Menu {
+                        Button {
+                            showSettingsSheet = true
+                        } label: {
+                            Label("Settings", systemImage: "gear")
+                        }
+                        Button {
+                            notificationManager.showCoordsToPinConverter()
+                        } label: {
+                            Label("Coordinates to DIGIPIN", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath")
+                        }
+                    } label: {
+                        CButton.RoundBtnLabel(symbol: "ellipsis")
                     }
                 }
             }
@@ -152,7 +160,7 @@ extension BottomSheetView {
             Button {
                 haptic.toggle()
                 (mapController.digipin ?? "NA").copyToClipboard()
-                notificationManager.showToast(title: "Copied to clipboard")
+                notificationManager.copiedToClipboardToast()
             } label: {
                 Text(mapController.digipin ?? "Out of bounds")
                     .font(.title2.bold())
@@ -204,10 +212,10 @@ extension BottomSheetView {
     
     private func handleGeometryChange(oldValue: CGFloat, newValue: CGFloat) {
         // limiting the offset to 300, so toolbar opacity effect will be visible
-        viewModel.sheetHeight = min(newValue, 350 + viewModel.safeAreaBottomInset)
+        viewModel.sheetHeight = min(newValue, MapViewModel.sheetMidHeight + viewModel.safeAreaBottomInset)
         
         // Calculate toolbar opacity
-        let progress = max(min((newValue - (350 + viewModel.safeAreaBottomInset)) / 50, 1), 0)
+        let progress = max(min((newValue - (MapViewModel.sheetMidHeight + viewModel.safeAreaBottomInset)) / 50, 1), 0)
         viewModel.toolbarOpacity = 1 - progress
         
         // Calculate animation duration

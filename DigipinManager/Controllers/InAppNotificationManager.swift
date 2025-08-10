@@ -51,6 +51,10 @@ class InAppNotificationManager: ObservableObject {
         notificationQueue.append(notification)
     }
     
+    func copiedToClipboardToast() {
+        showToast(title: "Copied to clipboard")
+    }
+    
     @discardableResult
     func showAudioController(title: String) -> UUID {
         Task { @MainActor in
@@ -64,6 +68,30 @@ class InAppNotificationManager: ObservableObject {
             message: nil,
             type: .neutral,
             mode: .audioContoll,
+            timing: .long
+        )
+        
+        // Add to queue
+        notificationQueue.append(notification)
+        return id
+    }
+    
+    @discardableResult
+    func showCoordsToPinConverter() -> UUID {
+        Task { @MainActor in
+            SpeechManager.shared.stop()
+        }
+        let openConverter = notificationQueue.first(where: { $0.mode == .coordsToPinConverter })
+        
+        guard openConverter == nil else { return openConverter!.id }
+        
+        let id = UUID()
+        let notification = InAppNotification(
+            id: id,
+            title: nil,
+            message: nil,
+            type: .neutral,
+            mode: .coordsToPinConverter,
             timing: .long
         )
         
@@ -117,6 +145,7 @@ enum NotificationMode {
     case notification
     case toast
     case audioContoll
+    case coordsToPinConverter
 }
 
 enum NotificationTime: CGFloat {

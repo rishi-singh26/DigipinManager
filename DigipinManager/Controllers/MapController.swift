@@ -50,7 +50,7 @@ class MapController: ObservableObject {
     
     func updatePinAndAddress() {
         guard let center = mapCenter else { return }
-        let newDigipin = DigipinUtility.getPinFrom(center: center)
+        let newDigipin = try? DigipinUtility.getPinFrom(center: center)
         
         withAnimation(.bouncy) {
             digipin = newDigipin

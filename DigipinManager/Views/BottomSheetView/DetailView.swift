@@ -40,7 +40,7 @@ struct DetailView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         (mapViewModel.selectedMarker ?? "").copyToClipboard()
-                        notificationManager.showToast(title: "Copied to clipboard")
+                        notificationManager.copiedToClipboardToast()
                     } label: {
                         Image(systemName: "document.on.document")
                             .font(.body)

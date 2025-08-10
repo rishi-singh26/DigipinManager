@@ -20,7 +20,9 @@ struct NotificationRootView<Content: View>: View {
                     window.backgroundColor = .clear
                     // View controller
                     let rootController = UIHostingController(
-                        rootView: NotificationContainer().environmentObject(InAppNotificationManager.shared)
+                        rootView: NotificationContainer()
+                            .environmentObject(InAppNotificationManager.shared)
+                            .environmentObject(MapController.shared)
                     )
                     rootController.view.frame = windowScene.keyWindow?.frame ?? .zero
                     rootController.view.backgroundColor = .clear

@@ -72,7 +72,7 @@ struct DigipinTileView: View {
                     CButton.RectBtn(symbol: "pin", helpText: "Pin DIGIPIN to list", action: action2)
                         .buttonStyle(.plain)
                 } else if let dpItem = dpItem {
-                    CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Navigatie to DIGIPIN") {
+                    CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Fly to DIGIPIN location") {
                         mapController.updatedMapPosition(with: Coordinate(latitude: dpItem.latitude, longitude: dpItem.longitude))
                     }
                     .buttonStyle(.plain)
@@ -123,7 +123,7 @@ struct DigipinTileView: View {
             } label: {
                 Label("Copy All Three", systemImage: "document.on.document")
             }
-            .help("Copy DIGIPIN to clipboard")
+            .help("Copy DIGIPIN data to clipboard")
         } label: {
             CButton.RectBtnLabel(symbol: "square.and.arrow.up")
         }

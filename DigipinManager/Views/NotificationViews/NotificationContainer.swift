@@ -80,6 +80,8 @@ fileprivate struct InAppNotificationSelector: View {
                 InAppToastView(notification: notification, index: index)
             case .audioContoll:
                 AudioControlNotificationView(notification: notification, index: index)
+            case .coordsToPinConverter:
+                CoordinateToPinNotificationView(notification: notification, index: index)
             }
         }
     }

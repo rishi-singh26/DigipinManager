@@ -9,9 +9,10 @@ import SwiftUI
 
 class MapViewModel: ObservableObject {
     static let shared = MapViewModel()
+    static let sheetMidHeight: CGFloat = 318
     
     let lowDetent: PresentationDetent = .height(80)
-    let midDetent: PresentationDetent = .height(350)
+    let midDetent: PresentationDetent = .height(sheetMidHeight)
     let highDetent: PresentationDetent = .fraction(0.999)
     let detents: Set<PresentationDetent> = [.height(80), .height(318), .fraction(0.999)]
     
