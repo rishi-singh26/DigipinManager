@@ -55,7 +55,7 @@ class LocationManager: NSObject, ObservableObject {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .denied, .restricted:
-            updateError(with: "Location access denied. Please enable location access in Settings.")
+            updateError(with: "Location access denied.")
         case .authorizedWhenInUse, .authorizedAlways:
             startLocationUpdates()
         @unknown default:
@@ -104,7 +104,7 @@ extension LocationManager: CLLocationManagerDelegate {
                 case .locationUnknown:
                     updateError(with: "Unable to determine location")
                 case .denied:
-                    updateError(with: "Location access denied. Please enable location access in Settings.")
+                    updateError(with: "Location access denied.")
                 case .network:
                     updateError(with: "Network error while getting location")
                 default:
@@ -124,7 +124,7 @@ extension LocationManager: CLLocationManagerDelegate {
             case .authorizedWhenInUse, .authorizedAlways:
                 self.startLocationUpdates()
             case .denied, .restricted:
-                updateError(with: "Location access denied. Please enable location access in Settings.")
+                updateError(with: "Location access denied.")
                 self.stopLocationUpdates()
             case .notDetermined:
                 break

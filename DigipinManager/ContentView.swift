@@ -31,7 +31,7 @@ struct ContentView: View {
                 }
                 .onChange(of: locationManager.errorMessage, { _, newValue in
                     if !newValue.isEmpty {
-                        notificationManager.showNotification(title: "Alert!", message: newValue)
+                        notificationManager.showToast(title: "Alert!")
                     }
                 })
                 .onAppear {
