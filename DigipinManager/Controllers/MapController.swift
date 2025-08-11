@@ -8,15 +8,9 @@
 import SwiftUI
 import MapKit
 import SwiftData
-import Combine
 
 class MapController: ObservableObject {
     static let shared = MapController()
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    // Debounce timer for map region changes
-    private var debounceTimer: Timer?
     
     // MARK: - Persistent Storage Keys via @AppStorage
     @AppStorage(StorageKeys.savedLatitude) private var savedLatitude: CLLocationDegrees = 20.5
@@ -30,7 +24,7 @@ class MapController: ObservableObject {
     @Published var selectedMapStyleType: MapStyleType = .standard
     @Published var showMapStyleSheet: Bool = false
     
-    @Published var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
+    @Published private(set) var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
     /// pin for mapCenter, when map camera moves, the min for the map center is updated here
     @Published private(set) var digipin: String?
     /// AddressSearchResult data for map center
@@ -45,7 +39,6 @@ class MapController: ObservableObject {
         
         // Now load saved position after all properties are initialized
         loadSavedPosition()
-        observeAppLifecycle()
     }
     
     func updatePinAndAddress() {
@@ -85,11 +78,6 @@ class MapController: ObservableObject {
             ))
         }
     }
-    
-    /// Clean up resources
-    deinit {
-        debounceTimer?.invalidate()
-    }
 }
 
 // MARK: - Storage logic
@@ -101,14 +89,11 @@ extension MapController {
         static let savedLonDelta = "MapSpanLonDelta"
     }
     
-    private func savePosition() {
-        if let region = position.region {
-            savedLatitude = region.center.latitude
-            savedLongitude = region.center.longitude
-            savedLatDelta = region.span.latitudeDelta
-            savedLonDelta = region.span.longitudeDelta
-            //print("Position saved: \(region.center), span: \(region.span)")
-        }
+    private func savePosition(region: MKCoordinateRegion) {
+        savedLatitude = region.center.latitude
+        savedLongitude = region.center.longitude
+        savedLatDelta = region.span.latitudeDelta
+        savedLonDelta = region.span.longitudeDelta
     }
     
     private func loadSavedPosition() {
@@ -118,59 +103,14 @@ extension MapController {
         )
         position = .region(savedRegion)
     }
-    
-    private func observeAppLifecycle() {
-        // Save position when app goes to background or terminates
-        NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
-            .merge(with: NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification))
-            .sink { [weak self] _ in
-                self?.savePosition()
-            }
-            .store(in: &cancellables)
-        
-        // Also observe when app becomes active to potentially reload
-        // NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
-        //     .sink { [weak self] _ in
-        //         print("App became active - current saved position: lat=\(self?.savedLatitude ?? 0), lon=\(self?.savedLongitude ?? 0)")
-        //     }
-        //     .store(in: &cancellables)
-    }
 }
 
 // MARK: - Additional helper methods for better position management
 extension MapController {
     /// Call this method when the map region changes to save the current position (debounced)
     func onMapRegionChanged(_ region: MKCoordinateRegion) {
-        position = .region(region)
-        
-        // Cancel previous timer if it exists
-        debounceTimer?.invalidate()
-        
-        // Set up new timer to save after 0.5 seconds of inactivity
-        debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
-            self?.savePosition()
-        }
-    }
-    
-    /// Alternative method using Combine for debouncing (more reactive approach)
-    private func setupDebounceTimer() {
-        // Create a subject to emit map region changes
-        let mapRegionSubject = PassthroughSubject<MKCoordinateRegion, Never>()
-        
-        mapRegionSubject
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .sink { [weak self] region in
-                self?.position = .region(region)
-                self?.savePosition()
-            }
-            .store(in: &cancellables)
-    }
-    
-    /// Force save current position
-    func forceSave() {
-        // Cancel any pending debounced save
-        debounceTimer?.invalidate()
-        savePosition()
+        mapCenter = region.center
+        self.savePosition(region: region)
     }
 }
 
