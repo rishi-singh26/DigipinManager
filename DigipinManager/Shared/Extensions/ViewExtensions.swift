@@ -48,10 +48,19 @@ extension View {
     @ViewBuilder
     func blurSlide(_ show: Bool) -> some View {
         self
-            // Groups the view and adds blur to the grouped view rather then applying blur to each node view
+        // Groups the view and adds blur to the grouped view rather then applying blur to each node view
             .compositingGroup()
             .blur(radius: show ? 0 : 10)
             .opacity(show ? 1 : 0)
             .offset(y: show ? 0 : 100)
+    }
+    
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
     }
 }
