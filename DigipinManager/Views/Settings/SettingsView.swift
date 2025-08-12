@@ -13,10 +13,18 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-//                Section {
-//                    Label("Export Digipins", systemImage: "square.and.arrow.up")
-//                    Label("Import Digipins", systemImage: "square.and.arrow.down")
-//                }
+                Section {
+                    NavigationLink {
+                        ExportView()
+                    } label: {
+                        Label("Import Digipins", systemImage: "square.and.arrow.down")
+                    }
+                    NavigationLink {
+                        ExportView()
+                    } label: {
+                        Label("Export Digipins", systemImage: "square.and.arrow.up")
+                    }
+                }
                 
                 Section {
                     NavigationLink {
