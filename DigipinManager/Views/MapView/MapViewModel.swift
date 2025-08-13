@@ -30,4 +30,12 @@ class MapViewModel: ObservableObject {
     @Published var searchText: String = ""
     /// Id of marker selected on map
     @Published var selectedMarker: String?
+    
+    private init() {}
+    
+    func toggleBttomSheet(value: Bool) {
+        withAnimation {
+            showBottomSheet = value
+        }
+    }
 }

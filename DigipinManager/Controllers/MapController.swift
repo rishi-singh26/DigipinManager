@@ -74,7 +74,7 @@ class MapController: ObservableObject {
         withAnimation {
             position = .region(MKCoordinateRegion(
                 center: .init(latitude: coords.latitude, longitude: coords.longitude),
-                span: position.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+                span: position.region?.span ?? MKCoordinateSpan(latitudeDelta: 0.002, longitudeDelta: 0.002)
             ))
         }
     }
@@ -137,7 +137,10 @@ extension MapController {
     
     func saveToPinnedListIfNotExist(pin: String, address: String, _ context: ModelContext) -> (Bool, String?) {
         guard let coords = DigipinUtility.getCoordinates(from: pin) else { return (false, nil) }
-
+        return saveToPinnedListIfNotExist(pin: pin, address: address, coords: coords, context)
+    }
+    
+    func saveToPinnedListIfNotExist(pin: String, address: String, coords: Coordinate,  _ context: ModelContext) -> (Bool, String?) {
         let newItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         let predicate = #Predicate<DPItem> { $0.id == newItem.id }
         let descriptor = FetchDescriptor<DPItem>(predicate: predicate)
@@ -148,7 +151,7 @@ extension MapController {
                 try context.save()
                 return (true, nil)
             } else {
-                return (false, "Already pinned")
+                return (false, "Already added to pinned list")
             }
         } catch {
             // Handle error if needed

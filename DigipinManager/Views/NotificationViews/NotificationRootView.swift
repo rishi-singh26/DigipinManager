@@ -23,6 +23,8 @@ struct NotificationRootView<Content: View>: View {
                         rootView: NotificationContainer()
                             .environmentObject(InAppNotificationManager.shared)
                             .environmentObject(MapController.shared)
+                            .environmentObject(MapViewModel.shared)
+                            .modelContainer(ModelContextContainer.shared.sharedModelContainer)
                     )
                     rootController.view.frame = windowScene.keyWindow?.frame ?? .zero
                     rootController.view.backgroundColor = .clear

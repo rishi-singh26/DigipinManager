@@ -181,9 +181,9 @@ extension BottomSheetView {
             .help("Add DIGIPIN to pinned list")
             .disabled(mapController.digipin == nil)
         }
-        .padding(.horizontal, 30)
+        .padding(.horizontal, 20)
         .frame(height: 48)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .center)
         .transition(.blurReplace)
     }
     

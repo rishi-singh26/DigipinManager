@@ -13,25 +13,11 @@ struct DigipinManagerApp: App {
     var sharedModelContainer: ModelContainer
     
     @StateObject private var appController = AppController()
-    @StateObject private var mapController = MapController.shared
-    @StateObject private var mapViewModel = MapViewModel()
     @StateObject private var locationManager = LocationManager()
     @StateObject private var networkMonitor = NetworkMonitor()
     
     init() {
-        let container: ModelContainer
-        do {
-            let schema = Schema([
-                DPItem.self,
-            ])
-            let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            container = try ModelContainer(for: schema, migrationPlan: DPItemMigrationPlan.self, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-        
-        self.sharedModelContainer = container
-//        _addressesController = StateObject(wrappedValue: AddressesController(modelContext: container.mainContext))
+        self.sharedModelContainer = ModelContextContainer.shared.sharedModelContainer
     }
 
     var body: some Scene {
@@ -40,8 +26,8 @@ struct DigipinManagerApp: App {
                 .environment(\.isNetworkConnected, networkMonitor.isConnected)
                 .environment(\.connectionType, networkMonitor.connectionType)
                 .environmentObject(appController)
-                .environmentObject(mapController)
-                .environmentObject(mapViewModel)
+                .environmentObject(MapController.shared)
+                .environmentObject(MapViewModel.shared)
                 .environmentObject(locationManager)
                 .environmentObject(InAppNotificationManager.shared)
         }

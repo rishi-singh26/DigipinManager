@@ -76,7 +76,7 @@ struct DigipinTileView: View {
                 Spacer()
                 
                 if let action2 = action2 {
-                    CButton.RectBtn(symbol: "pin", helpText: "Pin DIGIPIN to list", action: action2)
+                    CButton.RectBtn(symbol: "pin", helpText: "Add DIGIPIN to pinned list", action: action2)
                         .buttonStyle(.plain)
                 } else if let dpItem = dpItem {
                     CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Fly to DIGIPIN location") {

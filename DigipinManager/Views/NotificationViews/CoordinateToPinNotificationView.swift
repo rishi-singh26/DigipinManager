@@ -8,82 +8,13 @@
 import SwiftUI
 import MapKit
 
-@Observable
-fileprivate class Convertor {
-    var latitude: String = ""
-    var longitude: String = ""
-    
-    var location: CLLocationCoordinate2D?
-    var addressData: (AddressSearchResult?, String?)?
-    
-    var output: String = ""
-    var errorMessage: String?
-    
-    func convert() {
-        guard let lat = Double(latitude) else {
-            handleError("Enter valid latitude")
-            return
-        }
-        
-        guard let lon = Double(longitude) else {
-            handleError("Enter valid longitude")
-            return
-        }
-        
-        location = .init(latitude: lat, longitude: lon)
-        fetchAddress()
-        
-        do {
-            if let pin = try DigipinUtility.getPinFrom(latitude: lat, longitude: lon) {
-                setPin(pin)
-            } else {
-                handleError("Some thing went wrong!")
-            }
-        } catch {
-            handleError("Coordinates out of bounds!")
-        }
-    }
-    
-    func isInValid() -> Bool {
-        if Double(latitude) == nil || Double(longitude) == nil {
-            return true
-        } else {
-            return false
-        }
-    }
-    
-    private func setPin(_ pin: String) {
-        withAnimation {
-            output = pin
-            errorMessage = nil
-        }
-    }
-    
-    private func handleError(_ messaage: String) {
-        withAnimation {
-            output = ""
-            errorMessage = messaage
-        }
-        addressData = nil
-    }
-    
-    private func fetchAddress() {
-        guard let location = location else { return }
-        var addressData: (AddressSearchResult?, String?)?
-        Task {
-            addressData = try? await AddressUtility.shared.getAddressFromLocation(location)
-            withAnimation {
-                self.addressData = addressData
-            }
-        }
-    }
-}
-
 struct CoordinateToPinNotificationView: View {
     @Environment(\.isNetworkConnected) private var isConnected
+    @Environment(\.modelContext) private var modelContext
     
     @EnvironmentObject private var notificationManager: InAppNotificationManager
     @EnvironmentObject private var mapController: MapController
+    @EnvironmentObject private var mapViewModel: MapViewModel
     
     enum Field {
         case latitude
@@ -93,57 +24,12 @@ struct CoordinateToPinNotificationView: View {
     let notification: InAppNotification
     let index: Int
     
-    @State private var convertor = Convertor()
+    @StateObject private var viewModel = CoordinateToPinNotificationViewModel()
     @FocusState private var focusedField: Field?
     
     var body: some View {
         VStack(alignment: .leading) {
-            VStack(alignment: .leading, spacing: 15) {
-                HStack {
-                    Text("Coordinates to DIGIPIN")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    CButton.XMarkFillBtn(action: removeNotification)
-                }
-                
-                HStack {
-                    CoordInputBuilder("Latitide", text: $convertor.latitude, field: .latitude)
-                    CoordInputBuilder("Longitude", text: $convertor.longitude, field: .longitude)
-                }
-                
-                if let errMess = convertor.errorMessage {
-                    Text(errMess)
-                        .foregroundStyle(.red)
-                        .padding(.horizontal)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity)
-                        .background(.red.opacity(0.1), in: .rect(cornerRadius: 15))
-                }
-                
-                if convertor.output.count > 10 {
-                    OutputBuilder()
-                }
-                
-                HStack {
-                    ActionBuilder("Cancel",
-                                  action: removeNotification,
-                                  foregroundColor: .primary,
-                                  backgroundColor: Color.gray.opacity(0.35))
-                    Spacer()
-                    ActionBuilder("Convert",
-                                  action: convertData,
-                                  foregroundColor: .white,
-                                  backgroundColor: Color.accentColor)
-                    .disabled(convertor.isInValid())
-                }
-                .padding(.top)
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
+            CardBuilder()
         }
         .background {
             RoundedRectangle(cornerRadius: 40, style: .continuous)
@@ -153,6 +39,55 @@ struct CoordinateToPinNotificationView: View {
         }
         .contentShape(.rect(cornerRadius: 40))
         .padding(.horizontal, 10)
+        .onChange(of: viewModel.location ?? CLLocationCoordinate2D(), { _, newValue in
+            // Update map position when the location for provided coordinates is available
+            if newValue.latitude != 0.0 && newValue.longitude != 0.0 {
+                mapController.updatedMapPosition(with: newValue)
+            }
+        })
+        .onAppear {
+            mapViewModel.toggleBttomSheet(value: false)
+        }
+    }
+}
+
+
+// MARK: - View builders
+extension CoordinateToPinNotificationView {
+    @ViewBuilder
+    private func CardBuilder() -> some View {
+        VStack {
+            HStack {
+                Text("Coordinates to DIGIPIN")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                CButton.XMarkFillBtn(action: removeNotification)
+            }
+            
+            HStack {
+                CoordInputBuilder("Latitide", text: $viewModel.latitude, field: .latitude)
+                CoordInputBuilder("Longitude", text: $viewModel.longitude, field: .longitude)
+            }
+            
+            if let errMess = viewModel.errorMessage {
+                Text(errMess)
+                    .foregroundStyle(.red)
+                    .padding(.horizontal)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity)
+                    .background(.red.opacity(0.1), in: .rect(cornerRadius: 15))
+            }
+            
+            if viewModel.output.count > 10 {
+                OutputBuilder()
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
     }
     
     @ViewBuilder
@@ -161,20 +96,18 @@ struct CoordinateToPinNotificationView: View {
             .focused($focusedField, equals: field)
             .font(.headline)
             .padding()
-            .background(.background.opacity(0.4), in: .rect(cornerRadius: 25))
+            .background(.background.opacity(0.4), in: .rect(cornerRadius: 20))
             .keyboardType(.numbersAndPunctuation)
-            .submitLabel(field == .latitude ? .next : .go)
+            .submitLabel(field == .latitude ? .next : .done)
             .onSubmit {
                 if field == .latitude {
                     focusedField = .longitude
                 } else if field == .longitude {
-                    convertData()
+                    viewModel.convert()
                 }
             }
             .onChange(of: text.wrappedValue) { oldValue, newValue in
-                if newValue.count == 0 {
-                    return
-                }
+                if newValue.isEmpty { return }
                 if Double(newValue) == nil {
                     text.wrappedValue = oldValue
                 }
@@ -184,7 +117,7 @@ struct CoordinateToPinNotificationView: View {
     @ViewBuilder
     private func OutputBuilder() -> some View {
         VStack(alignment: .leading) {
-            Text(convertor.output.uppercased())
+            Text(viewModel.output.uppercased())
                 .font(.title3)
                 .fontWeight(.semibold)
                 .fontDesign(.rounded)
@@ -192,28 +125,19 @@ struct CoordinateToPinNotificationView: View {
             
             Divider()
             
-            if let address = convertor.addressData?.1, address.count > 0 {
+            if let address = viewModel.addressData?.1, address.count > 0 {
                 Text(address)
                 Divider()
             }
             
             HStack {
                 ShareLink(item: String.createSharePinData(
-                    address: convertor.addressData?.1 ?? "",
-                    location: convertor.location,
-                    pin: convertor.output
+                    address: viewModel.addressData?.1 ?? "",
+                    location: viewModel.location,
+                    pin: viewModel.output
                 )) {
                     CButton.RectBtnLabel(symbol: "square.and.arrow.up")
                 }
-                
-                Spacer()
-                
-                CButton.RectBtn(symbol: "document.on.document", helpText: "Copy DIGIPIN") {
-                    focusedField = nil
-                    notificationManager.copiedToClipboardToast()
-                    convertor.output.uppercased().copyToClipboard()
-                }
-                .buttonStyle(.plain)
                 
                 Spacer()
                 
@@ -222,8 +146,23 @@ struct CoordinateToPinNotificationView: View {
                 
                 Spacer()
                 
+                CButton.RectBtn(symbol: "document.on.document", helpText: "Copy DIGIPIN") {
+                    focusedField = nil
+                    notificationManager.copiedToClipboardToast()
+                    viewModel.output.uppercased().copyToClipboard()
+                }
+                .buttonStyle(.plain)
+                
+                Spacer()
+                
+                CButton.RectBtn(symbol: "pin", helpText: "Add DIGIPIN to pinned list", action: saveSearchedPin)
+                    .disabled(viewModel.addressData?.1 == nil)
+                    .buttonStyle(.plain)
+                
+                Spacer()
+                
                 CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Fly to DIGIPIN location") {
-                    mapController.updatedMapPosition(with: convertor.location!)
+                    mapController.updatedMapPosition(with: viewModel.location!)
                 }
                 .buttonStyle(.plain)
             }
@@ -251,22 +190,38 @@ struct CoordinateToPinNotificationView: View {
         }
         .buttonStyle(.plain)
     }
-    
-    private func convertData() {
-        focusedField = nil
-        convertor.convert()
+}
+
+
+// MARK: - Private methods
+extension CoordinateToPinNotificationView {
+    private func saveSearchedPin() {
+        guard let location = viewModel.location else { return }
+        guard let address = viewModel.addressData?.1 else { return }
+        let (status, message) = mapController.saveToPinnedListIfNotExist(
+            pin: viewModel.output,
+            address: address,
+            coords: Coordinate(latitude: location.latitude, longitude: location.longitude),
+            modelContext
+        )
+        if status {
+            notificationManager.showToast(title: "Added to pinned list")
+        } else if let message {
+            notificationManager.showToast(title: message, type: .warning)
+        }
     }
     
     private func removeNotification() {
         focusedField = nil
         SpeechManager.shared.stop()
+        mapViewModel.toggleBttomSheet(value: true)
         notificationManager.removeNotification(notification.id)
     }
     
     private func handleSpeech() {
-        guard convertor.output.count > 10 else { return }
+        guard viewModel.output.count > 10 else { return }
         focusedField = nil
-        let _ = notificationManager.showAudioController(title: convertor.output)
+        let _ = notificationManager.showAudioController(title: viewModel.output)
     }
 }
 

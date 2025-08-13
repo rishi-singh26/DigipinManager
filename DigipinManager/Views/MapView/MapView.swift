@@ -62,14 +62,23 @@ struct MapView: View {
             BottomSheetView()
         }
         .overlay(alignment: .bottomTrailing) {
-            BottomFloatingToolbar()
-                .padding(.trailing, 10)
-                .offset(y: viewModel.safeAreaBottomInset - 10)
+            // Show map style switcher only when bottom sheet is shown
+            if viewModel.showBottomSheet {
+                BottomFloatingToolbar()
+                    .padding(.trailing, 10)
+                    .offset(y: viewModel.safeAreaBottomInset - 10)
+            }
         }
         .onGeometryChange(for: CGFloat.self) {
             $0.safeAreaInsets.bottom
         } action: { newValue in
             viewModel.safeAreaBottomInset = newValue
+        }
+        .onChange(of: viewModel.showBottomSheet) { _, newValue in
+            // Update map center, DIGIPIN and Address when showBottomSheet is set to true
+            if newValue, let region = mapController.position.region {
+                mapController.onMapRegionChanged(region)
+            }
         }
     }
     
@@ -125,7 +134,10 @@ struct MapView: View {
     }
     
     private func handleCameraMoveEnd(context: MapCameraUpdateContext) {
-        mapController.onMapRegionChanged(context.region)
+        // Update map center, DIGIPIN and Address only when bottom sheet is shown
+        if viewModel.showBottomSheet {
+            mapController.onMapRegionChanged(context.region)
+        }
     }
 }
 
