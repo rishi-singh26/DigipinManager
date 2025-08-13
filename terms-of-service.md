@@ -14,9 +14,9 @@ By downloading, installing, or using Digipin Manager, you acknowledge and consen
 
 ## Use of the Application
 
-* **Eligibility**: You must be at least 4 years of age to use the Application.
-* **License**: You are granted a non-exclusive, non-transferable, and limited license to install and use the Application solely for personal or non-commercial purposes, subject to these Terms.
-* **Prohibited Conduct**: You agree not to:
+* Eligibility: You must be at least 4 years of age to use the Application.
+* License: You are granted a non-exclusive, non-transferable, and limited license to install and use the Application solely for personal or non-commercial purposes, subject to these Terms.
+* Prohibited Conduct: You agree not to:
 
   1. Use the Application for any unlawful purpose;
   2. Violate any applicable local, state, national, or international laws or regulations;
@@ -35,9 +35,9 @@ Users should verify critical information independently before relying on it for 
 
 ## Free and Open Source
 
-* **Pricing and Availability:** Digipin Manager is provided free of charge.
-* **Open Source:** The Application's source code is made available to the public under the terms of the MIT License. Users are hereby informed that they may access, inspect, and obtain a copy of the source code at [https://github.com/rishi-singh26/DigipinManager](https://github.com/rishi-singh26/DigipinManager).
-* **License Compliance:** Users must comply with the terms of all applicable open-source licenses when using, modifying, or redistributing the Application or its components.
+* Pricing and Availability: Digipin Manager is provided free of charge.
+* Open Source: The Application's source code is made available to the public under the terms of the MIT License. Users are hereby informed that they may access, inspect, and obtain a copy of the source code at [https://github.com/rishi-singh26/DigipinManager](https://github.com/rishi-singh26/DigipinManager).
+* License Compliance: Users must comply with the terms of all applicable open-source licenses when using, modifying, or redistributing the Application or its components.
 
 ---
 
