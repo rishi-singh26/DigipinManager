@@ -23,40 +23,41 @@ class ExportViewModel {
     var selectedExportType: ExportTypes = .CSV
     var showExportTypePicker: Bool = false
     
-    var exportData: ExportDataVersionOne = ExportDataVersionOne(dpItems: [])
+    var exportData: ExportDataVersionOne = ExportDataVersionOne(dpItems: [], type: ExportTypes.CSV)
     var isExportingFile: Bool = false
     
     func exportDigipinItems() {
         if selectedExportDPitems.isEmpty {
-            showAlert(with: "Please select digipins to export.")
+            showAlert(with: "Please select digipins to export.", type: .warning)
             return
         }
         
-        exportData = ExportDataVersionOne(dpItems: Array(selectedExportDPitems).map({
-            ExportV1DPItem(dpItem: $0)
-        }))
+        exportData = ExportDataVersionOne(
+            dpItems: Array(selectedExportDPitems).map({ ExportV1DPItem(dpItem: $0) }),
+            type: selectedExportType
+        )
         isExportingFile = true
         selectedExportDPitems = []
     }
     
     func handleExportCompletion(_ result: Result<URL, any Error>) -> Void {
-        var message = ""
         switch result {
         case .success:
-            message = "Exported successfully"
+            showAlert(with: "Exported successfully", type: .success)
         case .failure:
-            message = "Export failed"
+            showAlert(with: "Export failed", type: .error)
         }
-        showAlert(with: message)
     }
     
     // MARK: - Error handelling properties
     var errorMessage: String = ""
     var showErrorAlert: Bool = false
+    var notificationType: NotificationType = .info
     
-    func showAlert(with message: String) {
+    func showAlert(with message: String, type: NotificationType = .info) {
         errorMessage = message
         showErrorAlert = true
+        notificationType = type
     }
     
     var exportContentType: UTType {
@@ -76,7 +77,7 @@ class ExportViewModel {
 
 
 // MARK: - Export Types
-enum ExportTypes: String, CaseIterable, Identifiable {
+enum ExportTypes: String, CaseIterable, Identifiable, Codable {
     case CSV = "CSV"
     case JSON = "JSON"
 

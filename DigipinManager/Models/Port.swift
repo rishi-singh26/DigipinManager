@@ -22,35 +22,38 @@ enum PortError: Error {
     }
 }
 
-enum ExportVersion: String {
+enum ExportVersion: String, Codable {
     case v1 = "1.0.0"
     case v2 = "2.0.0"
 }
 
 struct VersionContainer: Codable {
-    let version: String
+    let version: ExportVersion
     let exportDate: String
+    let exportType: ExportTypes
 }
 
 protocol Portable: FileEncodable, Codable {
-    var version: String { get }
+    var version: ExportVersion { get }
     var exportDate: String { get }
 }
 
 // MARK: - Export Data Version One models
 struct ExportDataVersionOne: Portable {
-    let version: String = ExportVersion.v1.rawValue
+    let version: ExportVersion = ExportVersion.v1
     let exportDate: String
+    let exportType: ExportTypes
     let dpItems: [ExportV1DPItem]
     
-    init(dpItems: [ExportV1DPItem]) {
+    init(dpItems: [ExportV1DPItem], type: ExportTypes) {
         self.dpItems = dpItems
+        self.exportType = type
         self.exportDate = Date.now.ISO8601Format()
     }
-
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let decodedVersion = try container.decode(String.self, forKey: .version)
+        let decodedVersion = try container.decode(ExportVersion.self, forKey: .version)
         guard decodedVersion == version else {
             throw DecodingError.dataCorruptedError(
                 forKey: .version,
@@ -59,9 +62,10 @@ struct ExportDataVersionOne: Portable {
             )
         }
         exportDate = try container.decode(String.self, forKey: .exportDate)
+        exportType = try container.decode(ExportTypes.self, forKey: .exportType)
         dpItems = try container.decode([ExportV1DPItem].self, forKey: .dpItems)
     }
-
+    
     /// Encodes the object to JSON string
     func toJSON(prettyPrinted: Bool = true) throws -> String {
         let data: Data = try self.toJSON(prettyPrinted: prettyPrinted)
@@ -90,8 +94,8 @@ struct ExportDataVersionOne: Portable {
     
     func toCSV() -> String {
         // CSV Header
-        var csv = "DIGIPIN,Address,Latitude,Longitude,Note,Favourite,Created At\n"
-
+        var csv = "DIGIPIN,Address,Latitude,Longitude,Note,Favourite,Created At,Version\n"
+        
         // CSV Rows
         for dpItem in dpItems {
             csv.append(dpItem.toCSVRow() + "\n")
@@ -102,6 +106,39 @@ struct ExportDataVersionOne: Portable {
     func toCSV() -> Data {
         let csv: String = self.toCSV()
         return csv.data(using: .utf8) ?? Data()
+    }
+    
+    /// Create `ExportDataVersionOne` from CSV Data
+    static func fromCSV(_ data: Data) -> ExportDataVersionOne? {
+        guard let string = String(data: data, encoding: .utf8) else { return nil }
+        return fromCSV(string)
+    }
+    
+    /// Create `ExportDataVersionOne` from CSV String (Unused)
+    static func fromCSV(_ csv: String) -> ExportDataVersionOne? {
+        let lines = csv.components(separatedBy: .newlines).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        
+        // Make sure there are at least 2 lines (header + 1 data row)
+        guard lines.count >= 2 else { return nil }
+        
+        let dataRows = Array(lines.dropFirst())
+        
+        return fromCSV(dataRows)
+    }
+    
+    /// Create `ExportDataVersionOne` from CSV lines array
+    static func fromCSV(_ csvLines: [String]) -> ExportDataVersionOne? {
+        var items: [ExportV1DPItem] = []
+        
+        for line in csvLines {
+            if let item = ExportV1DPItem.fromCSVRow(line) {
+                items.append(item)
+            } else {
+                continue
+            }
+        }
+        
+        return ExportDataVersionOne(dpItems: items, type: .CSV)
     }
     
     func encodeData(for type: UTType) throws -> Data {
@@ -146,8 +183,27 @@ struct ExportV1DPItem: Codable, Hashable {
     }
     
     func toCSVRow() -> String {
-        [digipin, address, latitude, longitude, note, favourite, createdAt]
+        [digipin, address, latitude, longitude, note, favourite, createdAt, ExportVersion.v1.rawValue]
             .map { "\"\($0.replacingOccurrences(of: "\"", with: "\"\""))\"" } // escape quotes
             .joined(separator: ",")
+    }
+    
+    /// Creates an `ExportV1DPItem` from a single CSV row string
+    static func fromCSVRow(_ csvRow: String) -> ExportV1DPItem? {
+        let fields = ImportUtility.decodeCSVRow(row: csvRow)
+        
+        guard fields.count == 8 else {
+            return nil
+        }
+        
+        return ExportV1DPItem(
+            digipin: fields[0],
+            note: fields[4],
+            address: fields[1],
+            latitude: fields[2],
+            longitude: fields[3],
+            favourite: fields[5],
+            createdAt: fields[6]
+        )
     }
 }

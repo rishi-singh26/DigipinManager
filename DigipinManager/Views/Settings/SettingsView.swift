@@ -15,7 +15,7 @@ struct SettingsView: View {
             List {
                 Section {
                     NavigationLink {
-                        ExportView()
+                        ImportView()
                     } label: {
                         Label("Import Digipins", systemImage: "square.and.arrow.down")
                     }

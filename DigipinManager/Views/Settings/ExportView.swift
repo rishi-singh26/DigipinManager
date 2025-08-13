@@ -10,6 +10,7 @@ import SwiftData
 
 struct ExportView: View {
     @State private var viewModel = ExportViewModel()
+    @EnvironmentObject private var notificationManager: InAppNotificationManager
     
     @Query(filter: #Predicate<DPItem> { !$0.deleted }, sort: [SortDescriptor(\DPItem.createdAt, order: .reverse)])
     private var dpItems: [DPItem]
@@ -62,6 +63,11 @@ struct ExportView: View {
             defaultFilename: viewModel.exportFileName,
             onCompletion: viewModel.handleExportCompletion
         )
+        .onChange(of: viewModel.errorMessage) { _, newValue in
+            if !newValue.isEmpty {
+                notificationManager.showToast(title: newValue, type: viewModel.notificationType)
+            }
+        }
     }
     
     @ViewBuilder
