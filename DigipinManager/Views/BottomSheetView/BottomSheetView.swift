@@ -123,7 +123,7 @@ extension BottomSheetView {
                         Button {
                             showSettingsSheet = true
                         } label: {
-                            Label("Settings", systemImage: "gear")
+                            Label("Options", systemImage: "switch.2")
                         }
                         Button {
                             notificationManager.showCoordsToPinConverter()
