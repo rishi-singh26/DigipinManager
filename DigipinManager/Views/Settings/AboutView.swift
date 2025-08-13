@@ -23,7 +23,7 @@ struct AboutView: View {
                 VStack(alignment: .leading) {
                     Text("Digipin Manager")
                         .font(.title.bold())
-                    Text("v\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+                    Text("v\(KAppVersion)")
                         .font(.callout)
                         .foregroundStyle(.gray)
                     Text("Develoved by Rishi Singh")

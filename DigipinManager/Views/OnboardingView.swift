@@ -42,6 +42,7 @@ struct OnboardingView: View {
     @State private var animateFooter: Bool = false
     
     @State private var showPrivacyPolicy: Bool = false
+    @State private var showTermsOfService: Bool = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -67,19 +68,12 @@ struct OnboardingView: View {
             .scrollBounceBehavior(.basedOnSize)
             
             VStack(spacing: 0, content: {
-                Text("By using Digipin Manager, you agree to")
-                    .font(.footnote)
-                    .foregroundStyle(.gray)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 15)
-                Text("Privacy Policy")
-                    .font(.footnote)
-                    .foregroundStyle(Color.accentColor)
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, 15)
-                    .onTapGesture {
-                        showPrivacyPolicy = true
-                    }
+                AgreementTextView {
+                    showPrivacyPolicy = true
+                } onTermsTapped: {
+                    showTermsOfService = true
+                }
+
                 
                 // Continue btn
                 Button(action: onContinue) {
@@ -132,6 +126,9 @@ struct OnboardingView: View {
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyViewBuilder()
         }
+        .sheet(isPresented: $showTermsOfService) {
+            TermsOfServiceViewBuilder()
+        }
     }
     
     @ViewBuilder
@@ -175,6 +172,20 @@ struct OnboardingView: View {
         }
     }
     
+    @ViewBuilder
+    private func TermsOfServiceViewBuilder() -> some View {
+        NavigationView {
+            TermsOfServiceView()
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Done") {
+                            showTermsOfService = false
+                        }
+                    }
+                }
+        }
+    }
+    
     private func delayedAnimation(_ delay: Double, action: @escaping () -> ()) async {
         try? await Task.sleep(for: .seconds(delay))
         
@@ -205,6 +216,41 @@ struct OnboardingView: View {
         ),
     ]
 }
+
+struct AgreementTextView: View {
+    var onPrivacyTapped: () -> Void
+    var onTermsTapped: () -> Void
+
+    var body: some View {
+        Text("By using Digipin Manager, you agree to")
+            .font(.footnote)
+            .foregroundStyle(.gray)
+            .multilineTextAlignment(.center)
+            .padding(.top, 15)
+
+        HStack(spacing: 4) {
+            Button(action: onPrivacyTapped) {
+                Text("Privacy Policy")
+                    .font(.footnote)
+                    .foregroundStyle(Color.accentColor)
+            }
+
+            Text("and")
+                .font(.footnote)
+                .foregroundStyle(.gray)
+                .multilineTextAlignment(.center)
+
+            Button(action: onTermsTapped) {
+                Text("Terms of Service")
+                    .font(.footnote)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .multilineTextAlignment(.center)
+        .padding(.bottom, 10)
+    }
+}
+
 
 #Preview {
     @Previewable @State var showOnboarding: Bool = false
