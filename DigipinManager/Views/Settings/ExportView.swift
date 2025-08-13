@@ -18,9 +18,22 @@ struct ExportView: View {
     var body: some View {
         List(dpItems, id: \.self, selection: $viewModel.selectedExportDPitems) { dpItem in
             VStack(alignment: .leading) {
-                Text(dpItem.id)
+                HStack {
+                    Text(dpItem.id)
+                    
+                    Spacer()
+                    
+                    if let note = dpItem.note {
+                        Text(note)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .frame(width: 150, alignment: .trailing)
+                    }
+                }
                 Text(dpItem.address)
                     .font(.caption.bold())
+                    .foregroundColor(.secondary)
             }
         }
         .environment(\.editMode, .constant(.active))
@@ -30,7 +43,7 @@ struct ExportView: View {
             } label: {
                 Text(viewModel.selectedExportType.displayName)
                     .contentTransition(.numericText())
-                    .frame(minWidth: 80)
+                    .frame(minWidth: 80, alignment: .trailing)
             }
         }
         .toolbar(content: {

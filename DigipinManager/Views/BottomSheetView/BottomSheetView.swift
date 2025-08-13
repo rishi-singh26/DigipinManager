@@ -142,7 +142,7 @@ extension BottomSheetView {
     
     @ViewBuilder
     private func SearchBarBuilder() -> some View {
-        TextField("Search", text: $viewModel.searchText)
+        TextField("DIGIPIN", text: $viewModel.searchText)
             .textInputAutocapitalization(.characters)
             .font(.title3.bold())
             .focused($isFocused)

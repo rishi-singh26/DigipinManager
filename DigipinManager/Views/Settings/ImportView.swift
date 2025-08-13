@@ -19,9 +19,20 @@ struct ImportView: View {
     var body: some View {
         List(viewModel.getV1DpItems, id: \.self, selection: $viewModel.selectedV1DPItems) { dpItem in
             VStack(alignment: .leading) {
-                Text(dpItem.digipin)
+                HStack {
+                    Text(dpItem.digipin)
+                    
+                    Spacer()
+                    
+                    Text(dpItem.note)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .frame(width: 150, alignment: .trailing)
+                }
                 Text(dpItem.address)
                     .font(.caption.bold())
+                    .foregroundColor(.secondary)
                 if let safeErrMess = viewModel.errorDict[dpItem.digipin] {
                     Text(safeErrMess)
                         .font(.caption.bold())

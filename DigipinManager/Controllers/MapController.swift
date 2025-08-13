@@ -17,11 +17,12 @@ class MapController: ObservableObject {
     @AppStorage(StorageKeys.savedLongitude) private var savedLongitude: CLLocationDegrees = 81.5
     @AppStorage(StorageKeys.savedLatDelta) private var savedLatDelta: CLLocationDegrees = 40
     @AppStorage(StorageKeys.savedLonDelta) private var savedLonDelta: CLLocationDegrees = 40
+    @AppStorage(StorageKeys.savedMapStyle) private var savedMapStyle: String = "Standard"
     
     // Map Properties
     /// Current map center position
     @Published var position: MapCameraPosition
-    @Published var selectedMapStyleType: MapStyleType = .standard
+    @Published var selectedMapStyleType: MapStyleType = .standard { didSet { saveSelectedMapStyle() }}
     @Published var showMapStyleSheet: Bool = false
     
     @Published private(set) var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
@@ -37,8 +38,8 @@ class MapController: ObservableObject {
             span: MKCoordinateSpan(latitudeDelta: 40, longitudeDelta: 40)
         ))
         
-        // Now load saved position after all properties are initialized
-        loadSavedPosition()
+        // Now load saved data
+        loadSavedData()
     }
     
     func updatePinAndAddress() {
@@ -87,6 +88,12 @@ extension MapController {
         static let savedLongitude = "MapCenterLongitude"
         static let savedLatDelta = "MapSpanLatDelta"
         static let savedLonDelta = "MapSpanLonDelta"
+        static let savedMapStyle = "SelectedMapStyle"
+    }
+    
+    private func loadSavedData() {
+        loadSavedPosition()
+        loadSavedMapStyle()
     }
     
     private func savePosition(region: MKCoordinateRegion) {
@@ -102,6 +109,14 @@ extension MapController {
             span: MKCoordinateSpan(latitudeDelta: savedLatDelta, longitudeDelta: savedLonDelta)
         )
         position = .region(savedRegion)
+    }
+    
+    private func saveSelectedMapStyle() {
+        savedMapStyle = selectedMapStyleType == .standard ? "Standard" : "Imagery"
+    }
+    
+    private func loadSavedMapStyle() {
+        selectedMapStyleType = savedMapStyle == "Standard" ? .standard : .imagery
     }
 }
 
