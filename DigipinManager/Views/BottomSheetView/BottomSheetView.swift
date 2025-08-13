@@ -68,9 +68,11 @@ struct BottomSheetView: View {
             SettingsView()
                 .presentationDetents([.fraction(0.999)])
         }
-        .sheet(isPresented: $appController.showOnboarding, content: {
+        .sheet(isPresented: $appController.showOnboarding) {
+            locationManager.requestLocationPermission()
+        } content: {
             OnboardingView(tint: .accentColor, onContinue: appController.hideOnboardingSheet)
-        })
+        }
         .sheet(isPresented: $showQRSheet) {
             if appController.searchAddressData.1 != nil && viewModel.showSearchBar {
                 DigipinQRView(pin: viewModel.searchText)

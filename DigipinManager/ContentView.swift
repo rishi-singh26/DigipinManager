@@ -19,9 +19,6 @@ struct ContentView: View {
     var body: some View {
         NotificationRootView {
             MapView()
-                .onAppear {
-                    locationManager.requestLocationPermission()
-                }
                 .onReceive(locationManager.$location) { location in
                     if let location = location, !hasUpdatedMap {
                         mapController.updatedMapPosition(with: location.coordinate)
