@@ -59,6 +59,16 @@ struct AboutView: View {
                 } label: {
                     Label("Privacy Policy", systemImage: "lock.shield")
                 }
+                NavigationLink {
+                    TermsOfServiceView()
+                } label: {
+                    Label("Terms of Service", systemImage: "list.bullet.rectangle.portrait")
+                }
+                NavigationLink {
+                    AcknowledgementsView()
+                } label: {
+                    Label("Acknowledgements", systemImage: "list.bullet.clipboard")
+                }
             }
             
             Section {
@@ -74,11 +84,6 @@ struct AboutView: View {
                     CustomLabel(leadingImageName: "checkmark.seal.text.page", trailingImageName: "arrow.up.right", title: "MIT License")
                 }
                 .help("Open Digipin Manager Open-Source license in browser")
-            }
-            
-            Section {
-                Text("Digipin Manager is lovingly developed in India. 🇮🇳")
-                    .font(.caption)
             }
         }
         .withURLConfirmation($showURLConfirmation, url: selectedURLForConfirmation ?? "")

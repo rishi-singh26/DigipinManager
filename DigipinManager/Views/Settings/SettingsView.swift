@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var showURLConfirmation: Bool = false
+    @State private var selectedURLForConfirmation: String?
     
     var body: some View {
         NavigationView {
@@ -32,6 +34,13 @@ struct SettingsView: View {
                     } label: {
                         Label("How DIGIPIN works", systemImage: "questionmark.circle")
                     }
+                    Button {
+                        selectedURLForConfirmation = "https://www.indiapost.gov.in/digipin"
+                        showURLConfirmation = true
+                    } label: {
+                        CustomLabel(leadingImageName: "book.pages", trailingImageName: "arrow.up.right", title: "Learn More")
+                    }
+                    .help("Learn more about how DIGIPIN works")
                 }
                 
                 Section {
@@ -50,6 +59,7 @@ struct SettingsView: View {
                     }
                 }
             }
+            .withURLConfirmation($showURLConfirmation, url: selectedURLForConfirmation ?? "")
         }
     }
 }
