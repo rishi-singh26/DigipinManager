@@ -77,8 +77,8 @@ class QRShareUtility {
     ///   - isDarkMode: Boolean, decides the appearance of QRCode
     /// - Returns: UIImage containing the QR code with text, or nil if generation fails
     static func createCombinedImage(qrCode: UIImage, titleText: String?, subtitleText: String?, isDarkMode: Bool = false) -> UIImage? {
-        let imageSize = CGSize(width: 300, height: 400)
-        let qrSize = CGSize(width: 200, height: 200)
+        let imageSize = CGSize(width: 400, height: 500)
+        let qrSize = CGSize(width: 300, height: 300)
         
         let renderer = UIGraphicsImageRenderer(size: imageSize)
         
@@ -95,7 +95,7 @@ class QRShareUtility {
             if let titleText = titleText {
                 // Draw title text
                 let titleAttributes: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.boldSystemFont(ofSize: 18),
+                    .font: UIFont.boldSystemFont(ofSize: 20),
                     .foregroundColor: textColor
                 ]
                 // Calculate title position and draw

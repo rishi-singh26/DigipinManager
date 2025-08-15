@@ -12,3 +12,4 @@ let KHeaderHeight: CGFloat = 80
 let KAppId = "6749537602"
 let KPrivactPolicyURL = ""
 let KAppVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+let KDigipinCharacters: Set<Character> = ["F", "C", "9", "8", "J", "3", "2", "7", "K", "4", "5", "6", "L", "M", "P", "T"]

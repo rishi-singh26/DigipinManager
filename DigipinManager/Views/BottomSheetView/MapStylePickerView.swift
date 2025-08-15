@@ -33,6 +33,7 @@ struct MapStylePickerView: View {
             Spacer()
         }
         .presentationDetents([.height(350)])
+        .presentationDragIndicator(.visible)
     }
     
     @ViewBuilder

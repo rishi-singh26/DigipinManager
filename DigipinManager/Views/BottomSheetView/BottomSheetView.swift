@@ -172,17 +172,20 @@ extension BottomSheetView {
             .disabled(mapController.digipin == nil)
             .buttonStyle(.plain)
             
-            Spacer()
-            
-            Button {
-                saveCorrentLocDigipin()
-            } label: {
-                Image(systemName: "pin")
-                    .font(.body)
+            if viewModel.sheetHeight < 150 {
+                Spacer()
+                Button {
+                    saveCorrentLocDigipin()
+                } label: {
+                    Image(systemName: "pin")
+                        .font(.body)
+                }
+                .help("Add DIGIPIN to pinned list")
+                .disabled(mapController.digipin == nil)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
             }
-            .help("Add DIGIPIN to pinned list")
-            .disabled(mapController.digipin == nil)
         }
+        .animation(.default, value: viewModel.sheetHeight < 150)
         .padding(.horizontal, 20)
         .frame(height: 48)
         .frame(maxWidth: .infinity, alignment: .center)
@@ -226,9 +229,23 @@ extension BottomSheetView {
     }
     
     private func handleSearchTextChange(old: String, new: String) {
-        if (new.count == 3 || new.count == 7) && old.count < new.count {
-            viewModel.searchText += "-"
+        let filtered = new.uppercased().filter { KDigipinCharacters.contains($0) }
+        
+        var formatted = ""
+        for (index, char) in filtered.enumerated() {
+            if index == 3 || index == 6 {
+                formatted.append("-")
+            }
+            formatted.append(char)
+            
+            if formatted.count == 12 { break }
         }
+        
+        // Update only if the value actually changed
+        if viewModel.searchText != formatted {
+            viewModel.searchText = formatted
+        }
+        
         if let coords = DigipinUtility.getCoordinates(from: new) {
             mapController.updatedMapPosition(with: coords)
             appController.updateSearchLocation(with: coords)

@@ -37,7 +37,7 @@ struct QRCodeView: View {
                         .interpolation(.none)
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 200, height: 200)
+                        .frame(width: 300, height: 300)
                     
                     if let subTitle = subtitleText {
                         Text(subTitle)
@@ -61,7 +61,9 @@ struct QRCodeView: View {
                     Label("Share QR Code", systemImage: "square.and.arrow.up")
                         .padding(.vertical, 10)
                         .padding(.horizontal, 30)
-                        .background(.gray.opacity(0.15), in: .rect(cornerRadius: 12))
+                        .foregroundStyle(.white)
+                        .fontWeight(.semibold)
+                        .background(Color.accentColor, in: .rect(cornerRadius: 14))
                 }
             } else {
                 Text("Unable to generate QR code.")

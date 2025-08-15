@@ -61,6 +61,7 @@ struct DetailView: View {
         }
         .presentationDetents([.height(350)])
         .presentationBackgroundInteraction(.enabled)
+        .presentationDragIndicator(.visible)
     }
     
     private func fetchItem() {

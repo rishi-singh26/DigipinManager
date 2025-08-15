@@ -27,13 +27,14 @@ struct DigipinQRView: View {
             .padding(.vertical)
             .padding(.horizontal, 20)
             
-            QRCodeView(inputText: pin, titleText: pin)
+            QRCodeView(inputText: pin, titleText: pin, subtitleText: "Scan QR to get DIGIPIN")
             
             Spacer()
         }
         .background(Color(UIColor.systemGroupedBackground))
-        .presentationDetents([.fraction(0.65)])
+        .presentationDetents([.fraction(0.80)])
         .presentationBackgroundInteraction(.enabled)
+        .presentationDragIndicator(.visible)
     }
 }
 
