@@ -13,10 +13,12 @@ struct NotificationContainer: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            let layout: AnyLayout = isExpanded ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(ZStackLayout())
+            //let layout: AnyLayout = isExpanded ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(ZStackLayout())
+            let layout: AnyLayout = AnyLayout(VStackLayout(spacing: 10))
             
             // Get the notifications in the correct order based on expansion state
-            let notifications = isExpanded ? notificationManager.notificationQueue.reversed() : notificationManager.notificationQueue
+            //let notifications = isExpanded ? notificationManager.notificationQueue.reversed() : notificationManager.notificationQueue
+            let notifications = notificationManager.notificationQueue.reversed()
             
             layout {
                 ForEach(Array(notifications.enumerated()), id: \.element.id) { enumIndex, notification in
@@ -42,9 +44,9 @@ struct NotificationContainer: View {
                     ))
                 }
             }
-            .onTapGesture {
-                isExpanded.toggle()
-            }
+            //.onTapGesture {
+            //    isExpanded.toggle()
+            //}
         }
         .animation(.bouncy, value: isExpanded)
         .animation(.spring(), value: notificationManager.notificationQueue)
