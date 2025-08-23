@@ -197,7 +197,7 @@ extension BottomSheetView {
         DigipinTileView(address: address, location: location, pin: pin) {
             showQRSheet = true
         } action2: {
-            saveCorrentLocDigipin()
+            saveDigipin(pin: pin, address: address)
         }
     }
 }
@@ -261,12 +261,21 @@ extension BottomSheetView {
     
     private func saveCorrentLocDigipin() {
         Task {
-            let (status, message) = await mapController.saveCurrentLocDigipin(modelContext)
-            if status {
-                notificationManager.showToast(title: "Added to pinned list")
-            } else if let message {
-                notificationManager.showToast(title: message, type: .warning)
-            }
+            let result = await mapController.saveCurrentLocDigipin(modelContext)
+            handlePinSaveResult(result: result)
+        }
+    }
+    
+    private func saveDigipin(pin: String, address: String) {
+        let result = mapController.saveToPinnedListIfNotExist(pin: pin, address: address, modelContext)
+        handlePinSaveResult(result: result)
+    }
+    
+    private func handlePinSaveResult(result: (Bool, String?)) {
+        if result.0 {
+            notificationManager.showToast(title: "Added to pinned list")
+        } else if let message = result.1 {
+            notificationManager.showToast(title: message, type: .warning)
         }
     }
 }

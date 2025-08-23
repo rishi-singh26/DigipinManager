@@ -134,13 +134,13 @@ extension MapController {
     func saveCurrentLocDigipin(_ modelContext: ModelContext) async -> (Bool, String?) {
         guard let currentPosition = mapCenter else { return (false, nil) }
         guard let pin = digipin else { return (false, nil) }
-
+        
         let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
         guard let address = result?.1 else { return (false, nil) }
-
+        
         return saveToPinnedListIfNotExist(pin: pin, address: address, modelContext)
     }
-
+    
     
     func saveToPinnedList(pin: String, address: String, _ context: ModelContext) -> Bool {
         guard let coords = DigipinUtility.getCoordinates(from: pin) else { return false }
@@ -159,7 +159,7 @@ extension MapController {
         let newItem = DPItem(pin: pin, address: address, latitude: coords.latitude, longitude: coords.longitude)
         let predicate = #Predicate<DPItem> { $0.id == newItem.id }
         let descriptor = FetchDescriptor<DPItem>(predicate: predicate)
-
+        
         do {
             if try context.fetch(descriptor).isEmpty {
                 context.insert(newItem)
@@ -173,7 +173,6 @@ extension MapController {
             return (false, nil)
         }
     }
-
 }
 
 extension MapController {
