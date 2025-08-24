@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 @main
 struct DigipinManagerApp: App {
@@ -18,6 +19,15 @@ struct DigipinManagerApp: App {
     
     init() {
         self.sharedModelContainer = ModelContextContainer.shared.sharedModelContainer
+        
+        do {
+            try Tips.configure()
+            try Tips.resetDatastore()
+        }
+        catch {
+            // Handle TipKit errors
+            print("Error initializing TipKit \(error.localizedDescription)")
+        }
     }
 
     var body: some Scene {

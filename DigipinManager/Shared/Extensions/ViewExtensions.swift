@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import TipKit
 
 extension View {
     func shareSheet(isPresented: Binding<Bool>, items: [Any], excludedActivityTypes: [Any]? = nil) -> some View {
@@ -62,5 +63,21 @@ extension View {
         } else {
             self
         }
+    }
+    
+    @ViewBuilder
+    func withTipCloseStatusListner(_ tip: some Tip, onClose: @escaping () -> Void) -> some View {
+        self
+            .if(tip.status == .available, transform: { view in
+                view
+                    .task {
+                        for await status in tip.statusUpdates {
+                            if status == .invalidated(.tipClosed) {
+                                onClose()
+                                break // Exit the task to cancel listening
+                            }
+                        }
+                    }
+            })
     }
 }

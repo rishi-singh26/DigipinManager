@@ -13,8 +13,8 @@ class MapController: ObservableObject {
     static let shared = MapController()
     
     // MARK: - Persistent Storage Keys via @AppStorage
-    @AppStorage(StorageKeys.savedLatitude) private var savedLatitude: CLLocationDegrees = 20.5
-    @AppStorage(StorageKeys.savedLongitude) private var savedLongitude: CLLocationDegrees = 81.5
+    @AppStorage(StorageKeys.savedLatitude) private var savedLatitude: CLLocationDegrees = 26.6129788
+    @AppStorage(StorageKeys.savedLongitude) private var savedLongitude: CLLocationDegrees = 77.2298252
     @AppStorage(StorageKeys.savedLatDelta) private var savedLatDelta: CLLocationDegrees = 40
     @AppStorage(StorageKeys.savedLonDelta) private var savedLonDelta: CLLocationDegrees = 40
     @AppStorage(StorageKeys.savedMapStyle) private var savedMapStyle: String = "Standard"
@@ -22,7 +22,7 @@ class MapController: ObservableObject {
     // Map Properties
     /// Current map center position
     @Published var position: MapCameraPosition
-    @Published var selectedMapStyleType: MapStyleType = .standard { didSet { saveSelectedMapStyle() }}
+    @Published var selectedMapStyleType: MapStyleType = .imagery { didSet { saveSelectedMapStyle() }}
     @Published var showMapStyleSheet: Bool = false
     
     @Published private(set) var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
@@ -32,9 +32,9 @@ class MapController: ObservableObject {
     @Published private(set) var addressData: (AddressSearchResult?, String?)
     
     private init() {
-        // Initialize position with default values first
+        // Initialize position with default values first (India Gate)
         position = .region(MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 20.5, longitude: 81.5),
+            center: CLLocationCoordinate2D(latitude: 26.6129788, longitude: 77.2298252),
             span: MKCoordinateSpan(latitudeDelta: 40, longitudeDelta: 40)
         ))
         

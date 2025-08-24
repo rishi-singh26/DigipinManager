@@ -158,6 +158,9 @@ extension BottomSheetView {
     
     @ViewBuilder
     private func PinViewBuilder() -> some View {
+        let copyToClipboardTip = CopyToClipboardTip()
+        let addToPinnedListTip = AddToPinnedListTip()
+        
         HStack {
             Button {
                 haptic.toggle()
@@ -168,9 +171,13 @@ extension BottomSheetView {
                     .font(.title2.bold())
                     .contentTransition(.numericText())
             }
+            .popoverTip(copyToClipboardTip)
             .help("Copy DIGIPIN")
             .disabled(mapController.digipin == nil)
             .buttonStyle(.plain)
+            .withTipCloseStatusListner(copyToClipboardTip, onClose: {
+                AddToPinnedListTip.show = true
+            })
             
             if viewModel.sheetHeight < 150 {
                 Spacer()
@@ -180,9 +187,13 @@ extension BottomSheetView {
                     Image(systemName: "pin")
                         .font(.body)
                 }
+                .popoverTip(addToPinnedListTip)
                 .help("Add DIGIPIN to pinned list")
                 .disabled(mapController.digipin == nil)
                 .transition(.move(edge: .trailing).combined(with: .opacity))
+                .withTipCloseStatusListner(addToPinnedListTip, onClose: {
+                    ScopeTip.show = true
+                })
             }
         }
         .animation(.default, value: viewModel.sheetHeight < 150)

@@ -8,6 +8,7 @@
 import SwiftUI
 import MapKit
 import SwiftData
+import TipKit
 
 struct MapItem: Identifiable {
     let id: String
@@ -22,6 +23,8 @@ struct MapView: View {
     @EnvironmentObject private var viewModel: MapViewModel
 
     @Namespace var mapScope
+    
+    private let scopeTip = ScopeTip()
     
     var body: some View {
         ZStack(alignment: .center) {
@@ -53,6 +56,10 @@ struct MapView: View {
             .onMapCameraChange(frequency: .onEnd, handleCameraMoveEnd)
             
             ScopeBuilder()
+            
+            TipView(scopeTip, arrowEdge: .bottom)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 180)
         }
         .ignoresSafeArea(.keyboard)
         .onAppear(perform: {
@@ -130,7 +137,7 @@ struct MapView: View {
     private func ScopeBuilder() -> some View {
         Image(systemName: "scope")
             .font(.title2)
-            .foregroundColor(.primary)
+            .foregroundColor(mapController.selectedMapStyleType == .imagery ? .white : .primary)
     }
     
     private func handleCameraMoveEnd(context: MapCameraUpdateContext) {

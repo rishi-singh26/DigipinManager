@@ -11,7 +11,7 @@ import MapKit
 class AppController: ObservableObject {
     static let shared = AppController()
     // Onboarding view state
-    @AppStorage("seenOnBoardingView-v\(KAppVersion)") private var seenOnBoardingView: Bool = false
+    @AppStorage("seenOnBoardingView") private var seenOnBoardingView: Bool = false
     @Published var showOnboarding: Bool = false
     
     /// When searching for a DIGIPIN, on successful search the coordinates are saved to this
@@ -47,10 +47,14 @@ extension AppController {
             await MainActor.run {
                 self.showOnboarding = true
             }
+        } else {
+            CopyToClipboardTip.show = true // start showing tips if user has already seen onboarding view
         }
     }
     func hideOnboardingSheet() {
         seenOnBoardingView = true
         showOnboarding = false
+        
+        CopyToClipboardTip.show = true  // start showing tips after user continues from onboarding view
     }
 }
