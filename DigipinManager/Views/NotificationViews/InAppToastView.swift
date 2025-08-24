@@ -28,9 +28,7 @@ struct InAppToastView: View {
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
-                
-                Spacer()
-                
+                                
                 Button {
                     if let delayTask {
                         delayTask.cancel()
@@ -42,17 +40,15 @@ struct InAppToastView: View {
                 }
                 .accessibilityLabel("Dismiss notification")
             }
-            .padding()
+            .padding(10)
+            .background {
+                Capsule()
+                    .fill(.thinMaterial)
+                    .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
+                    .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
+            }
             .frame(maxWidth: .infinity)
         }
-        .background {
-            Capsule()
-                .fill(.thinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
-                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
-        }
-        .contentShape(.capsule)
-        .padding(.horizontal, 10)
         .gesture(gesture)
         .onAppear(perform: createDelayTask)
     }

@@ -207,7 +207,7 @@ extension BottomSheetView {
     private func AddressTileBuilder(address: String, location: CLLocationCoordinate2D?, pin: String) -> some View {
         DigipinTileView(address: address, location: location, pin: pin) {
             showQRSheet = true
-        } action2: {
+        } onAddToList: {
             saveDigipin(pin: pin, address: address)
         }
     }

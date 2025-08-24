@@ -21,27 +21,27 @@ struct DigipinTileView: View {
     var pin: String
     var dpItem: DPItem?
     
-    var action1: () -> Void
-    var action2: (() -> Void)?
+    var onQRTap: () -> Void
+    var onAddToList: (() -> Void)?
     
-    init(address: String, location: CLLocationCoordinate2D? = nil, pin: String, action1: @escaping () -> Void, action2: (() -> Void)? = nil) {
+    init(address: String, location: CLLocationCoordinate2D? = nil, pin: String, onQRTap: @escaping () -> Void, onAddToList: (() -> Void)? = nil) {
         self.address = address
         self.location = location
         self.pin = pin
         self.dpItem = nil
         
-        self.action1 = action1
-        self.action2 = action2
+        self.onQRTap = onQRTap
+        self.onAddToList = onAddToList
     }
     
-    init(dpItem: DPItem, action1: @escaping () -> Void, action2: (() -> Void)? = nil) {
+    init(dpItem: DPItem, onQRTap: @escaping () -> Void, onAddToList: (() -> Void)? = nil) {
         self.address = dpItem.address
         self.location = CLLocationCoordinate2D(latitude: dpItem.latitude, longitude: dpItem.longitude)
         self.pin = dpItem.id
         self.dpItem = dpItem
         
-        self.action1 = action1
-        self.action2 = action2
+        self.onQRTap = onQRTap
+        self.onAddToList = onAddToList
     }
     
     var body: some View {
@@ -70,13 +70,13 @@ struct DigipinTileView: View {
                 
                 Spacer()
                 
-                CButton.RectBtn(symbol: "qrcode", helpText: "Share DIGIPIN details via QR code", action: action1)
+                CButton.RectBtn(symbol: "qrcode", helpText: "Share DIGIPIN details via QR code", action: onQRTap)
                     .buttonStyle(.plain)
                 
                 Spacer()
                 
-                if let action2 = action2 {
-                    CButton.RectBtn(symbol: "pin", helpText: "Add DIGIPIN to pinned list", action: action2)
+                if let onAddToList = onAddToList {
+                    CButton.RectBtn(symbol: "pin", helpText: "Add DIGIPIN to pinned list", action: onAddToList)
                         .buttonStyle(.plain)
                 } else if let dpItem = dpItem {
                     CButton.RectBtn(symbol: "arrow.trianglehead.turn.up.right.diamond", helpText: "Fly to DIGIPIN location") {
