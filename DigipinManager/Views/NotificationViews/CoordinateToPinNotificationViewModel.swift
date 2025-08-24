@@ -112,4 +112,13 @@ class CoordinateToPinNotificationViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    func clearData() {
+        latitude = ""
+        longitude = ""
+        location = nil
+        addressData = nil
+        output = ""
+        errorMessage = nil
+    }
 }

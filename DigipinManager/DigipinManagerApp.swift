@@ -22,7 +22,6 @@ struct DigipinManagerApp: App {
         
         do {
             try Tips.configure()
-            try Tips.resetDatastore()
         }
         catch {
             // Handle TipKit errors

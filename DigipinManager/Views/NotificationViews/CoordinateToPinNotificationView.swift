@@ -218,6 +218,7 @@ extension CoordinateToPinNotificationView {
         focusedField = nil
         SpeechManager.shared.stop()
         mapViewModel.toggleBttomSheet(value: true)
+        viewModel.clearData()
         notificationManager.removeNotification(notification.id)
     }
     
