@@ -21,6 +21,7 @@ struct MapView: View {
     @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var viewModel: MapViewModel
+    @StateObject private var converterModel = CoordinateToPinNotificationViewModel.shared
 
     @Namespace var mapScope
     
@@ -34,6 +35,11 @@ struct MapView: View {
                     .stroke(.primary, style: .init(lineWidth: 1, lineCap: .round, lineJoin: .round))
                 if let searchLocation = appController.searchLocation {
                     Marker("Searched DIGIPIN", coordinate: searchLocation)
+                        .mapItemDetailSelectionAccessory(.sheet)
+                }
+                
+                if let convertedLocation = converterModel.location {
+                    Marker("Searched Location", coordinate: convertedLocation)
                         .mapItemDetailSelectionAccessory(.sheet)
                 }
                 
