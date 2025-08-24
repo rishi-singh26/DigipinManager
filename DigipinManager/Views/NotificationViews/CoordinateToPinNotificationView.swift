@@ -24,7 +24,7 @@ struct CoordinateToPinNotificationView: View {
     let notification: InAppNotification
     let index: Int
     
-    @StateObject private var viewModel = CoordinateToPinNotificationViewModel()
+    @StateObject private var viewModel = CoordinateToPinNotificationViewModel.shared
     @FocusState private var focusedField: Field?
     
     var body: some View {
@@ -95,8 +95,9 @@ extension CoordinateToPinNotificationView {
         TextField(title, text: text)
             .focused($focusedField, equals: field)
             .font(.headline)
-            .padding()
-            .background(.background.opacity(0.4), in: .rect(cornerRadius: 20))
+            .padding(.horizontal)
+            .padding(.vertical, 8)
+            .background(.background.opacity(0.4), in: .rect(cornerRadius: 16))
             .keyboardType(.numbersAndPunctuation)
             .submitLabel(field == .latitude ? .next : .done)
             .onSubmit {
@@ -118,6 +119,7 @@ extension CoordinateToPinNotificationView {
     private func OutputBuilder() -> some View {
         VStack(alignment: .leading) {
             Text(viewModel.output.uppercased())
+                .textSelection(.enabled)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .fontDesign(.rounded)
@@ -127,6 +129,7 @@ extension CoordinateToPinNotificationView {
             
             if let address = viewModel.addressData?.1, address.count > 0 {
                 Text(address)
+                    .textSelection(.enabled)
                 Divider()
             }
             

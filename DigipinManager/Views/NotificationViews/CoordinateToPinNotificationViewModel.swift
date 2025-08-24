@@ -10,6 +10,7 @@ import Combine
 import MapKit
 
 class CoordinateToPinNotificationViewModel: ObservableObject {
+    static let shared = CoordinateToPinNotificationViewModel()
     @Published var latitude: String = ""
     @Published var longitude: String = ""
     
@@ -21,7 +22,7 @@ class CoordinateToPinNotificationViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
+    private init() {
         // To avoid unnecessary updates to address, this debouncer has been setup
         // The address will update 0.5 seconds after user has stopped typing in either latitude or longitude field
         // Conversion happens if the data entered is valid
