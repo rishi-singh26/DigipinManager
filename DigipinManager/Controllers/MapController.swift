@@ -138,7 +138,12 @@ extension MapController {
         let result = try? await AddressUtility.shared.getAddressFromLocation(currentPosition)
         guard let address = result?.1 else { return (false, nil) }
         
-        return saveToPinnedListIfNotExist(pin: pin, address: address, modelContext)
+        return saveToPinnedListIfNotExist(
+            pin: pin,
+            address: address,
+            coords: Coordinate(latitude: currentPosition.latitude, longitude: currentPosition.longitude),
+            modelContext
+        )
     }
     
     
