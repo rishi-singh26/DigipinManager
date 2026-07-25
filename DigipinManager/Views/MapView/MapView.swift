@@ -194,5 +194,6 @@ struct MapView: View {
         .environmentObject(MapController.shared)
         .environmentObject(MapViewModel.shared)
         .environmentObject(LocationManager.shared)
+        .environmentObject(InAppNotificationManager.shared)
         .modelContainer(container)
 }

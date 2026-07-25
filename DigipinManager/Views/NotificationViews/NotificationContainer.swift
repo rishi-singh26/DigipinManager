@@ -9,6 +9,7 @@ import SwiftUI
 
 struct NotificationContainer: View {
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
+    @EnvironmentObject private var viewModel: MapViewModel
     @State private var isExpanded: Bool = true
     
     var body: some View {
@@ -40,7 +41,7 @@ struct NotificationContainer: View {
                     .zIndex(notification.isDeleting ? 1000 : 1000 - baseZIndex)
                     .transition(.asymmetric(
                         insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .leading)
+                        removal: .move(edge: .leading).combined(with: .opacity)
                     ))
                 }
             }
@@ -55,6 +56,9 @@ struct NotificationContainer: View {
                 isExpanded = true
             }
         }
+        // Cap the content width to match the bottom sheet's 350pt width on large screens (iPad),
+        // then center that capped block within the full-screen overlay.
+        .frame(maxWidth: viewModel.isLargeScreen ? 400 : .infinity)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
     

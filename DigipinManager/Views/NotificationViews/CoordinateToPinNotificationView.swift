@@ -31,8 +31,8 @@ struct CoordinateToPinNotificationView: View {
         VStack(alignment: .leading) {
             CardBuilder()
         }
-        .withOSSurface(.rect(cornerRadius: 40, style: .continuous))
-        .contentShape(.rect(cornerRadius: 40))
+        .withOSSurface(.rect(cornerRadius: 30, style: .continuous))
+        .contentShape(.rect(cornerRadius: 30))
         .padding(.horizontal, 10)
         .onChange(of: viewModel.location ?? CLLocationCoordinate2D(), { _, newValue in
             // Update map position when the location for provided coordinates is available

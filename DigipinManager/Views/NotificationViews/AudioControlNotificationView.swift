@@ -75,8 +75,8 @@ struct AudioControlNotificationView: View {
             .padding()
             .frame(maxWidth: .infinity)
         }
-        .withOSSurface(.rect(cornerRadius: 40, style: .continuous))
-        .contentShape(.rect(cornerRadius: 40))
+        .withOSSurface(.rect(cornerRadius: 30, style: .continuous))
+        .contentShape(.rect(cornerRadius: 30))
         .padding(.horizontal, 10)
         .gesture(gesture)
         .onAppear {

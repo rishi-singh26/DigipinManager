@@ -13,7 +13,7 @@ class MapViewModel: ObservableObject {
     
     @Published var showBottomSheet: Bool = false
     @Published var isLargeScreen: Bool = false
-    @Published var sheetDetent: PresentationDetent = .height(73)
+    @Published var sheetDetent: PresentationDetent = .height(70)
     @Published var sheetHeight: CGFloat = 0
     @Published var animationDuration: CGFloat = 0
     @Published var toolbarOpacity: CGFloat = 1
@@ -32,14 +32,14 @@ class MapViewModel: ObservableObject {
     
     var detents: Set<PresentationDetent> {
         if isLargeScreen {
-            return [.height(73), .fraction(0.97)]
+            return [.height(70), .fraction(0.97)]
         }
-        return [.height(73), .fraction(0.45), .fraction(0.98)]
+        return [.height(70), .fraction(0.45), .fraction(0.98)]
     }
     
     var cornerRadius: CGFloat? {
         if isLargeScreen {
-            return 35
+            return 30
         }
         return nil
     }

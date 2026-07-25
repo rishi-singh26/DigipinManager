@@ -80,7 +80,7 @@ struct BottomSheetView: View {
         }
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
-                .presentationDetents([.fraction(DeviceType.isIpad ? 0.6 : 0.99)])
+                .presentationDetents([.fraction(0.99)])
                 .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: $appController.showOnboarding) {
