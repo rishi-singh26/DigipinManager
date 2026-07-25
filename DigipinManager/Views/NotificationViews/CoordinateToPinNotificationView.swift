@@ -31,12 +31,7 @@ struct CoordinateToPinNotificationView: View {
         VStack(alignment: .leading) {
             CardBuilder()
         }
-        .background {
-            RoundedRectangle(cornerRadius: 40, style: .continuous)
-                .fill(.thinMaterial)
-                .shadow(color: .black.opacity(0.2), radius: 50, x: -3, y: -3)
-                .shadow(color: .black.opacity(0.2), radius: 50, x: 3, y: 3)
-        }
+        .withOSSurface(.rect(cornerRadius: 40, style: .continuous))
         .contentShape(.rect(cornerRadius: 40))
         .padding(.horizontal, 10)
         .onChange(of: viewModel.location ?? CLLocationCoordinate2D(), { _, newValue in

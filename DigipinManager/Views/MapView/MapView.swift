@@ -17,6 +17,8 @@ struct MapItem: Identifiable {
 struct MapView: View {
     @Query private var dpItems: [DPItem]
     
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var appController: AppController
     @EnvironmentObject private var locationManager: LocationManager
@@ -86,6 +88,20 @@ struct MapView: View {
             $0.safeAreaInsets.bottom
         } action: { newValue in
             viewModel.safeAreaBottomInset = newValue
+        }
+        .onGeometryChange(for: Bool.self) {
+            $0.size.width > 600
+        } action: { newValue in
+            // Update Detents before any changes!
+            if viewModel.sheetDetent != .height(85) && newValue {
+                viewModel.sheetDetent = .fraction(0.97)
+            } else if viewModel.sheetDetent == .fraction(0.97) && !newValue {
+                viewModel.sheetDetent = .fraction(0.45)
+            } else {
+                viewModel.sheetDetent = .height(85)
+            }
+            
+            viewModel.isLargeScreen = newValue
         }
         .onChange(of: viewModel.showBottomSheet) { _, newValue in
             // Update map center, DIGIPIN and Address when showBottomSheet is set to true

@@ -31,8 +31,7 @@ struct DigipinQRView: View {
             
             Spacer()
         }
-        .background(Color(UIColor.systemGroupedBackground))
-        .presentationDetents([.fraction(0.80)])
+        .presentationDetents([.fraction(DeviceType.isIpad ? 0.6 : 0.8)])
         .presentationBackgroundInteraction(.enabled)
         .presentationDragIndicator(.visible)
     }

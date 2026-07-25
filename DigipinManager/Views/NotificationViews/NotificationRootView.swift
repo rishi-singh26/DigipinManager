@@ -46,16 +46,21 @@ fileprivate class PassthroughWindow: UIWindow {
         // Check each subview in the overlay from front to back
         for subview in rootView.subviews.reversed() {
             let pointInSubview = subview.convert(point, from: rootView)
+            
             if let hitView = subview.hitTest(pointInSubview, with: event) {
-                
-                // If the tapped view (or its ancestor) is a UIControl (Button, Toggle, etc.), allow the tap
-                if hitView is UIControl || hitView.gestureRecognizers?.isEmpty == false {
-                    return hitView
-                }
-                
-                // Otherwise, block it (return something in the overlay so it doesn't fall through)
-                return rootView
+                return hitView
             }
+            
+//            if let hitView = subview.hitTest(pointInSubview, with: event) {
+//                
+//                // If the tapped view (or its ancestor) is a UIControl (Button, Toggle, etc.), allow the tap
+//                if hitView is UIControl || hitView.gestureRecognizers?.isEmpty == false {
+//                    return hitView
+//                }
+//                
+//                // Otherwise, block it (return something in the overlay so it doesn't fall through)
+//                return rootView
+//            }
         }
 
         // No overlay view hit → allow touch to pass to underlying content

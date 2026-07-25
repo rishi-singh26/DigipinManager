@@ -67,30 +67,7 @@ struct OnboardingView: View {
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.basedOnSize)
             
-            VStack(spacing: 0, content: {
-                AgreementTextView {
-                    showPrivacyPolicy = true
-                } onTermsTapped: {
-                    showTermsOfService = true
-                }
-
-                
-                // Continue btn
-                Button(action: onContinue) {
-                    Text("Continue")
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-#if os(macOS)
-                        .padding(.vertical, 8)
-#else
-                        .padding(.vertical, 4)
-#endif
-                }
-                .tint(tint)
-                .buttonStyle(.borderedProminent)
-                .buttonBorderShape(.capsule)
-            })
-            .blurSlide(animateFooter)
+            BottomButtonBuilder()
         }
         // Limiting the width
         .frame(maxWidth: 330)
@@ -122,6 +99,7 @@ struct OnboardingView: View {
                 animateFooter = true
             }
         }
+        .setUpOnboarding()
         .presentationCornerRadius(45)
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyViewBuilder()
@@ -184,6 +162,50 @@ struct OnboardingView: View {
                     }
                 }
         }
+    }
+    
+    @ViewBuilder
+    private func BottomButtonBuilder() -> some View {
+        VStack(spacing: 0, content: {
+            AgreementTextView {
+                showPrivacyPolicy = true
+            } onTermsTapped: {
+                showTermsOfService = true
+            }
+
+            
+            // Continue btn
+            if #available(iOS 26.0, macOS 26.0, *) {
+                Button(action: onContinue) {
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+#if os(macOS)
+                        .padding(.vertical, 8)
+#else
+                        .padding(.vertical, 4)
+#endif
+                }
+                .tint(tint)
+                .buttonStyle(.glassProminent)
+                .buttonBorderShape(.capsule)
+            } else {
+                Button(action: onContinue) {
+                    Text("Continue")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+#if os(macOS)
+                        .padding(.vertical, 8)
+#else
+                        .padding(.vertical, 4)
+#endif
+                }
+                .tint(tint)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
+            }
+        })
+        .blurSlide(animateFooter)
     }
     
     private func delayedAnimation(_ delay: Double, action: @escaping () -> ()) async {

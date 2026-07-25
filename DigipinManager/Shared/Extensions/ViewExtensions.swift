@@ -56,6 +56,31 @@ extension View {
             .offset(y: show ? 0 : 100)
     }
     
+    // Added for onboarding view.
+    @ViewBuilder
+    func setUpOnboarding() -> some View {
+#if os(macOS)
+        self
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+            .frame(minHeight: 600)
+#else
+        if DeviceType.isIpad {
+            // Makiing it fit on iPadOS 18+ devices
+            if #available(iOS 18, *) {
+                self
+                    .presentationSizing(.fitted)
+                    .padding(.horizontal, 25)
+                    .padding(.bottom, 25)
+            } else {
+                self
+            }
+        } else {
+            self
+        }
+#endif
+    }
+    
     @ViewBuilder
     func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
         if condition {
@@ -79,5 +104,29 @@ extension View {
                         }
                     }
             })
+    }
+    
+    /// Applies thin material on iOS 25 and below, and Liquid Glass on iOS 26+, using the provided shape.
+    @ViewBuilder
+    func withOSSurface<S: Shape>(_ shape: S) -> some View {
+#if os(iOS)
+        if #available(iOS 26, *) {
+            self.glassEffect(in: shape)
+        } else {
+            self.background {
+                shape
+                    .fill(.thinMaterial)
+                    .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
+                    .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
+            }
+        }
+#else
+        self.background {
+            shape
+                .fill(.thinMaterial)
+                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
+                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
+        }
+#endif
     }
 }

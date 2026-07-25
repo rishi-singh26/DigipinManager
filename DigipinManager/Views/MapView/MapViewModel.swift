@@ -11,13 +11,9 @@ class MapViewModel: ObservableObject {
     static let shared = MapViewModel()
     static let sheetMidHeight: CGFloat = 318
     
-    let lowDetent: PresentationDetent = .height(80)
-    let midDetent: PresentationDetent = .height(sheetMidHeight)
-    let highDetent: PresentationDetent = .fraction(0.999)
-    let detents: Set<PresentationDetent> = [.height(80), .height(318), .fraction(0.999)]
-    
     @Published var showBottomSheet: Bool = false
-    @Published var sheetDetent: PresentationDetent = .height(80)
+    @Published var isLargeScreen: Bool = false
+    @Published var sheetDetent: PresentationDetent = .height(73)
     @Published var sheetHeight: CGFloat = 0
     @Published var animationDuration: CGFloat = 0
     @Published var toolbarOpacity: CGFloat = 1
@@ -32,6 +28,21 @@ class MapViewModel: ObservableObject {
     @Published var selectedMarker: String?
     
     private init() {}
+    
+    
+    var detents: Set<PresentationDetent> {
+        if isLargeScreen {
+            return [.height(73), .fraction(0.97)]
+        }
+        return [.height(73), .fraction(0.45), .fraction(0.98)]
+    }
+    
+    var cornerRadius: CGFloat? {
+        if isLargeScreen {
+            return 35
+        }
+        return nil
+    }
     
     func toggleBttomSheet(value: Bool) {
         withAnimation {

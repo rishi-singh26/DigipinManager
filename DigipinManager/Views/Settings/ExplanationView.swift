@@ -16,15 +16,10 @@ struct ExplanationView: View {
     @State private var selectedURLForConfirmation: String?
     
     var body: some View {
-        ScrollView {
-            HighlightCharacterView(text: viewState.digipin, highlightIndex: viewState.highlightedIndex, highlightColor: .orange.opacity(0.6))
-                .font(.title)
-                .fontWeight(.semibold)
-                .padding(.top, 25)
-            
+        List {
             Map(position: $viewState.position) {
                 Marker("DIGIPIN", coordinate: CLLocationCoordinate2D(latitude: 28.612906, longitude: 77.229528))
-                ForEach(viewState.allBounds.indices) { index in
+                ForEach(viewState.allBounds.indices, id: \.self) { index in
                     ForEach(viewState.allBounds[index]) { square in
                         MapPolygon(points: square.corners)
                             .foregroundStyle(Color.clear)
@@ -42,7 +37,7 @@ struct ExplanationView: View {
                 }
             }
             .mapStyle(.imagery)
-            .frame(width: UIScreen.main.bounds.width - 40, height: UIScreen.main.bounds.width)
+            .aspectRatio(1, contentMode: .fit)
             .cornerRadius(10)
             .clipShape(.rect(cornerRadius: 10))
             
@@ -53,6 +48,7 @@ struct ExplanationView: View {
                         Text("Prev")
                     }
                 }
+                .buttonStyle(.plain)
                 .disabled(viewState.highlightedIndex == 0)
                 
                 Spacer()
@@ -63,11 +59,9 @@ struct ExplanationView: View {
                         Image(systemName: "chevron.right")
                     }
                 }
+                .buttonStyle(.plain)
                 .disabled(viewState.highlightedIndex == viewState.digipin.count - 1)
             }
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
-            .padding(20)
             
             
             Button(action: {
@@ -80,11 +74,17 @@ struct ExplanationView: View {
                     Image(systemName: "arrow.up.right")
                 }
             })
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground), in: .rect(cornerRadius: 10))
-            .padding(20)
             
+        }
+        .navigationTitle("Digipin Manager")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .title) {
+                HighlightCharacterView(text: viewState.digipin, highlightIndex: viewState.highlightedIndex, highlightColor: .orange.opacity(0.6))
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .padding(.top, 25)
+            }
         }
         .withURLConfirmation($showURLConfirmation, url: selectedURLForConfirmation ?? "")
 

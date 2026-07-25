@@ -40,7 +40,7 @@ struct AboutView: View {
                 }
                 .help("Open help and feedback form in web browser")
                 Button {
-                        getRating()
+                    getRating()
                 } label: {
                     CustomLabel(leadingImageName: "star", title: "Rate Us")
                 }

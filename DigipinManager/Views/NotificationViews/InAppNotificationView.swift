@@ -53,12 +53,7 @@ struct InAppNotificationView: View {
             .padding()
             .frame(maxWidth: .infinity)
         }
-        .background {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.thinMaterial)
-                .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
-                .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
-        }
+        .withOSSurface(.rect(cornerRadius: 14, style: .continuous))
         .contentShape(.rect(cornerRadius: 14))
         .padding(.horizontal, 10)
         .gesture(gesture)

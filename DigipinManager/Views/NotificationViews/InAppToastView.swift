@@ -41,12 +41,7 @@ struct InAppToastView: View {
                 .accessibilityLabel("Dismiss notification")
             }
             .padding(10)
-            .background {
-                Capsule()
-                    .fill(.thinMaterial)
-                    .shadow(color: .black.opacity(0.06), radius: 3, x: -1, y: -3)
-                    .shadow(color: .black.opacity(0.06), radius: 2, x: 1, y: 3)
-            }
+            .withOSSurface(.capsule)
             .frame(maxWidth: .infinity)
         }
         .gesture(gesture)

@@ -31,10 +31,11 @@ struct DetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    CButton.XMarkFillBtn {
+                    Button {
                         dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
                     }
-                    .buttonStyle(.plain)
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
@@ -43,7 +44,6 @@ struct DetailView: View {
                         notificationManager.copiedToClipboardToast()
                     } label: {
                         Image(systemName: "document.on.document")
-                            .font(.body)
                     }
 
                 }

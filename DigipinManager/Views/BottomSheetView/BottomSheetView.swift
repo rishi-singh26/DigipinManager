@@ -19,17 +19,13 @@ struct BottomSheetView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var notificationManager: InAppNotificationManager
     // Sheet properties
-    @FocusState private var isFocused: Bool
     @State private var showSettingsSheet: Bool = false
-    @State private var haptic: Bool = false
     @State private var showNotNetworkSheet = false
     //
     @State private var showQRSheet = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            HeaderBuilder()
-            
+        NavigationView {
             List {
                 if let pinAddress = mapController.addressData.1, !viewModel.showSearchBar, let pin = mapController.digipin {
                     AddressTileBuilder(address: pinAddress, location: mapController.mapCenter, pin: pin)
@@ -41,20 +37,38 @@ struct BottomSheetView: View {
                 
                 DPItemsListView(searchText: viewModel.searchText)
             }
+            .searchable(text: $viewModel.searchText, isPresented: $viewModel.showSearchBar.animation(), placement: .navigationBarDrawer(displayMode: .automatic), prompt: "DIGIPIN")
+            .navigationTitle("Digipin Manager")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        showSettingsSheet = true
+                    } label: {
+                        Label("Options", systemImage: "switch.2")
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        notificationManager.showCoordsToPinConverter()
+                    } label: {
+                        Label("Coordinates to DIGIPIN", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath")
+                    }
+                }
+                ToolbarItem(placement: .title) {
+                    PinViewBuilder()
+                }
+            }
         }
-        .scrollContentBackground(.hidden)
-        .background(Color(UIColor.systemGroupedBackground))
-        // Animating focus changes
-        .animation(.interpolatingSpring(duration: 0.3, bounce: 0, initialVelocity: 0), value: isFocused)
         // Presentation modifiers
         .presentationDetents(viewModel.detents, selection: $viewModel.sheetDetent)
         .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .presentationCompactAdaptation(.none)
+        .interactiveDismissDisabled()
+        .presentationCornerRadius(viewModel.cornerRadius)
+        .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
         .onGeometryChange(for: CGFloat.self, of: handleGeometryProxy, action: handleGeometryChange)
         .ignoresSafeArea()
-        .interactiveDismissDisabled()
-        .sensoryFeedback(.impact, trigger: haptic)
-        .onChange(of: isFocused, handleSearchFocusChange)
         .onChange(of: (isConnected ?? true), { _, new in
             showNotNetworkSheet = !new
         })
@@ -66,7 +80,8 @@ struct BottomSheetView: View {
         }
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
-                .presentationDetents([.fraction(0.999)])
+                .presentationDetents([.fraction(DeviceType.isIpad ? 0.6 : 0.99)])
+                .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: $appController.showOnboarding) {
             locationManager.requestLocationPermission()
@@ -74,88 +89,27 @@ struct BottomSheetView: View {
             OnboardingView(tint: .accentColor, onContinue: appController.hideOnboardingSheet)
         }
         .sheet(isPresented: $showQRSheet) {
-            if appController.searchAddressData.1 != nil && viewModel.showSearchBar {
-                DigipinQRView(pin: viewModel.searchText)
-            } else {
-                DigipinQRView(pin: mapController.digipin ?? "")
+            Group {
+                if appController.searchAddressData.1 != nil && viewModel.showSearchBar {
+                    DigipinQRView(pin: viewModel.searchText)
+                } else {
+                    DigipinQRView(pin: mapController.digipin ?? "")
+                }
             }
+            .presentationCornerRadius(viewModel.cornerRadius)
+            .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: Binding<Bool>(get: { viewModel.selectedMarker != nil }, set: { _ in viewModel.selectedMarker = nil })) {
             DetailView()
+                .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
+                .presentationCornerRadius(viewModel.cornerRadius)
         }
+        .onChange(of: viewModel.searchText, handleSearchTextChange)
     }
 }
 
 // MARK: - View builders
 extension BottomSheetView {
-    @ViewBuilder
-    private func HeaderBuilder() -> some View {
-        HStack(spacing: 10) {
-            if !viewModel.showSearchBar {
-                CButton.RoundBtn(symbol: "magnifyingglass") {
-                    haptic.toggle()
-                    withAnimation { viewModel.showSearchBar = true }
-                    isFocused = true
-                }
-            }
-            
-            ZStack {
-                if viewModel.showSearchBar {
-                    SearchBarBuilder()
-                } else {
-                    PinViewBuilder()
-                }
-            }
-            
-            ZStack {
-                if viewModel.showSearchBar {
-                    Button {
-                        haptic.toggle()
-                        isFocused = false
-                        withAnimation { viewModel.showSearchBar = false }
-                        viewModel.searchText = ""
-                        appController.closeSearch()
-                    } label: {
-                        CButton.RoundBtnLabel(symbol: "xmark")
-                    }
-                } else {
-                    Menu {
-                        Button {
-                            showSettingsSheet = true
-                        } label: {
-                            Label("Options", systemImage: "switch.2")
-                        }
-                        Button {
-                            notificationManager.showCoordsToPinConverter()
-                        } label: {
-                            Label("Coordinates to DIGIPIN", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath")
-                        }
-                    } label: {
-                        CButton.RoundBtnLabel(symbol: "ellipsis")
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 10)
-        .frame(height: KHeaderHeight)
-        .padding(.top, 5)
-        .background(Color(UIColor.systemGroupedBackground))
-    }
-    
-    @ViewBuilder
-    private func SearchBarBuilder() -> some View {
-        TextField("DIGIPIN", text: $viewModel.searchText)
-            .textInputAutocapitalization(.characters)
-            .font(.title3.bold())
-            .focused($isFocused)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 9)
-            .frame(height: 48)
-            .background(.gray.opacity(0.25), in: .capsule)
-            .transition(.blurReplace)
-            .onChange(of: viewModel.searchText, handleSearchTextChange)
-    }
-    
     @ViewBuilder
     private func PinViewBuilder() -> some View {
         let copyToClipboardTip = CopyToClipboardTip()
@@ -163,7 +117,6 @@ extension BottomSheetView {
         
         HStack {
             Button {
-                haptic.toggle()
                 (mapController.digipin ?? "NA").copyToClipboard()
                 notificationManager.copiedToClipboardToast()
             } label: {
@@ -185,7 +138,7 @@ extension BottomSheetView {
                     saveCorrentLocDigipin()
                 } label: {
                     Image(systemName: "pin")
-                        .font(.body)
+                        .font(.callout)
                 }
                 .popoverTip(addToPinnedListTip)
                 .help("Add DIGIPIN to pinned list")
@@ -197,8 +150,8 @@ extension BottomSheetView {
             }
         }
         .animation(.default, value: viewModel.sheetHeight < 150)
-        .padding(.horizontal, 20)
-        .frame(height: 48)
+//        .padding(.horizontal, 20)
+        .frame(width: 230, height: 48)
         .frame(maxWidth: .infinity, alignment: .center)
         .transition(.blurReplace)
     }
@@ -216,12 +169,6 @@ extension BottomSheetView {
 
 // MARK: - View Functions
 extension BottomSheetView {
-    private func handleSearchFocusChange(old: Bool, new: Bool) {
-        if new {
-            viewModel.sheetDetent = viewModel.highDetent
-        }
-    }
-    
     private func handleGeometryProxy(proxy: GeometryProxy) -> CGFloat {
         max(min(proxy.size.height, 400 + viewModel.safeAreaBottomInset), 0)
     }
