@@ -11,7 +11,7 @@ struct NotificationRootView<Content: View>: View {
     @ViewBuilder var content: Content
     // View properties
     @State private var overlayWindow: UIWindow?
-    
+
     var body: some View {
         content
             .onAppear {
@@ -26,13 +26,13 @@ struct NotificationRootView<Content: View>: View {
                             .environmentObject(MapViewModel.shared)
                             .modelContainer(ModelContextContainer.shared.sharedModelContainer)
                     )
-                    rootController.view.frame = windowScene.keyWindow?.frame ?? .zero
+                    rootController.view.frame = window.bounds
                     rootController.view.backgroundColor = .clear
                     window.rootViewController = rootController
                     window.isHidden = false
                     window.isUserInteractionEnabled = true
                     window.tag = 1009
-                    
+
                     overlayWindow = window
                 }
             }
@@ -41,29 +41,34 @@ struct NotificationRootView<Content: View>: View {
 
 fileprivate class PassthroughWindow: UIWindow {
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        guard let rootView = rootViewController?.view else { return nil }
+        guard let hitView = super.hitTest(point, with: event),
+              let rootView = rootViewController?.view else { return nil }
 
-        // Check each subview in the overlay from front to back
-        for subview in rootView.subviews.reversed() {
-            let pointInSubview = subview.convert(point, from: rootView)
-            
-            if let hitView = subview.hitTest(pointInSubview, with: event) {
-                return hitView
+        if #available(iOS 26.0, *) {
+            // On iOS 26 the SwiftUI hierarchy is opaque to UIKit: the hosting view no
+            // longer exposes its content as hit-testable subviews, so the subview loop
+            // below finds nothing and every touch would fall through to the window
+            // beneath. The rendered notification content still exists in the layer
+            // tree, so decide pass-through from CALayer hit testing instead: a hit on
+            // the hosting view's own layer means the touch landed on an empty area.
+            let hitLayer = rootView.layer.hitTest(point)
+            if hitLayer == nil || hitLayer === rootView.layer {
+                return nil
             }
-            
-//            if let hitView = subview.hitTest(pointInSubview, with: event) {
-//                
-//                // If the tapped view (or its ancestor) is a UIControl (Button, Toggle, etc.), allow the tap
-//                if hitView is UIControl || hitView.gestureRecognizers?.isEmpty == false {
-//                    return hitView
-//                }
-//                
-//                // Otherwise, block it (return something in the overlay so it doesn't fall through)
-//                return rootView
-//            }
-        }
+            // Touch is over notification content. Return the view UIKit resolved so
+            // the hosting view's gesture system handles the interaction.
+            return hitView
+        } else {
+            // iOS 18: check each subview in the overlay from front to back
+            for subview in rootView.subviews.reversed() {
+                let pointInSubview = subview.convert(point, from: rootView)
+                if let hitSubview = subview.hitTest(pointInSubview, with: event) {
+                    return hitSubview
+                }
+            }
 
-        // No overlay view hit → allow touch to pass to underlying content
-        return nil
+            // No overlay view hit → allow touch to pass to underlying content
+            return nil
+        }
     }
 }
