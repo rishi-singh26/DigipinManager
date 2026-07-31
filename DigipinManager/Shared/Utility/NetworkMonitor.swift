@@ -43,6 +43,10 @@ class NetworkMonitor: ObservableObject {
     }
     
     private func stopMonitoring() {
-        
+        monitor.cancel()
+    }
+
+    deinit {
+        monitor.cancel()
     }
 }

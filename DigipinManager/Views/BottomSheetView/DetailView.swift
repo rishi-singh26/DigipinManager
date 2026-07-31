@@ -21,7 +21,7 @@ struct DetailView: View {
     var body: some View {
         NavigationView {
             List {
-                if let selectedMarker = mapViewModel.selectedMarker, selectedMarker != KSearchMarkerId, let dpItem = selectedItem {
+                if let dpItem = selectedItem {
                     DigipinTileView(dpItem: dpItem) {
                         showQRSheet = true
                     }

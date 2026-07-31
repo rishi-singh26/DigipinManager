@@ -90,11 +90,9 @@ class CoordinateToPinNotificationViewModel: ObservableObject {
         Publishers.CombineLatest($latitude, $longitude)
             .sink { [weak self] lat, lon in
                 guard let self = self else { return }
-                
+
                 guard let _ = Double(lat), let _ = Double(lon) else { return }
-                
-                self.latitude = lat
-                self.longitude = lon
+
                 self.convert()
             }
             .store(in: &cancellables)

@@ -82,6 +82,7 @@ struct InAppNotificationView: View {
     private var gesture: some Gesture {
         DragGesture()
             .onChanged { value in
+                guard notificationManager.notificationQueue.indices.contains(index) else { return }
                 let xOffset = value.translation.width < 0 ? value.translation.width : 0
                 notificationManager.notificationQueue[index].offsetX = xOffset
                 cancelDelayTask()

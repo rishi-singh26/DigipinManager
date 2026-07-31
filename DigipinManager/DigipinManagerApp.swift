@@ -13,8 +13,8 @@ import TipKit
 struct DigipinManagerApp: App {
     var sharedModelContainer: ModelContainer
     
-    @StateObject private var appController = AppController()
-    @StateObject private var locationManager = LocationManager()
+    @StateObject private var appController = AppController.shared
+    @StateObject private var locationManager = LocationManager.shared
     @StateObject private var networkMonitor = NetworkMonitor()
     
     init() {

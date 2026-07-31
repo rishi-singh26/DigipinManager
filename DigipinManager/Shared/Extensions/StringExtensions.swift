@@ -88,8 +88,9 @@ extension String {
     }
     
     func validateDIGIPIN(_ input: String) -> Bool {
-        let regex = /^[A-Za-z0-9]{3}-[A-Za-z0-9]{3}-[A-Za-z0-9]{4}$/
-        return input.wholeMatch(of: regex) != nil
+        let allowedCharacters = String(KDigipinCharacters)
+        let pattern = "^[\(allowedCharacters)]{3}-[\(allowedCharacters)]{3}-[\(allowedCharacters)]{4}$"
+        return input.range(of: pattern, options: .regularExpression) != nil
     }
     
     static func createSharePinData(address: String?, location: GeoPoint?, pin: String) -> String {

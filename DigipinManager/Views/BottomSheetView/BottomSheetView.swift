@@ -77,10 +77,12 @@ struct BottomSheetView: View {
         }
         .sheet(isPresented: $mapController.showMapStyleSheet) {
             MapStylePickerView()
+                .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
         }
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
                 .presentationDetents([.fraction(0.99)])
+                .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
                 .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: $appController.showOnboarding) {
@@ -97,6 +99,7 @@ struct BottomSheetView: View {
                 }
             }
             .presentationCornerRadius(viewModel.cornerRadius)
+            .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
             .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: Binding<Bool>(get: { viewModel.selectedMarker != nil }, set: { _ in viewModel.selectedMarker = nil })) {

@@ -54,7 +54,7 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button("", systemImage: "checkmark") {
                         dismiss()
                     }
                 }

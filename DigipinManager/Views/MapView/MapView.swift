@@ -15,7 +15,7 @@ struct MapItem: Identifiable {
 }
 
 struct MapView: View {
-    @Query private var dpItems: [DPItem]
+    @Query(filter: #Predicate<DPItem> { !$0.deleted }) private var dpItems: [DPItem]
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     
@@ -47,7 +47,6 @@ struct MapView: View {
                 
                 ForEach(dpItems) {
                     Marker($0.id, coordinate: CLLocationCoordinate2DMake($0.latitude, $0.longitude))
-                        .mapItemDetailSelectionAccessory(.sheet)
                         .tag($0.id)
                 }
             }
@@ -81,7 +80,7 @@ struct MapView: View {
             if viewModel.showBottomSheet {
                 BottomFloatingToolbar()
                     .padding(.trailing, 10)
-                    .offset(y: viewModel.safeAreaBottomInset - 10)
+                    .offset(y: DeviceType.isIpad ? 0 : viewModel.safeAreaBottomInset - 10)
             }
         }
         .onGeometryChange(for: CGFloat.self) {
@@ -95,7 +94,7 @@ struct MapView: View {
             // Update Detents before any changes!
             if viewModel.sheetDetent != .height(MapViewModel.lowDetent) && newValue {
                 viewModel.sheetDetent = .fraction(MapViewModel.largeScreenHighDetent)
-            } else if viewModel.sheetDetent == .fraction(MapViewModel.highDetent) && !newValue {
+            } else if viewModel.sheetDetent == .fraction(MapViewModel.largeScreenHighDetent) && !newValue {
                 viewModel.sheetDetent = .fraction(MapViewModel.midDetent)
             } else {
                 viewModel.sheetDetent = .height(MapViewModel.lowDetent)

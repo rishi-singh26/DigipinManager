@@ -131,6 +131,7 @@ public struct DIGIPIN {
     /// - Returns: The central coordinate of the DIGIPIN cell.
     /// - Throws: `DIGIPINError.invalidDIGIPIN` if the code is malformed or contains invalid characters.
     public func coordinate(from digiPin: String) throws -> Coordinate {
+        guard Self.isValidFormat(digiPin) else { throw DIGIPINError.invalidDIGIPIN }
         let cleanPin = digiPin.replacingOccurrences(of: "-", with: "")
         guard cleanPin.count == Self.codeLength else { throw DIGIPINError.invalidDIGIPIN }
         var minLat = Bounds.minLat
@@ -237,6 +238,15 @@ public struct DIGIPIN {
     private static func isValidCoordinate(latitude: Double, longitude: Double) -> Bool {
         latitude >= Bounds.minLat && latitude <= Bounds.maxLat &&
         longitude >= Bounds.minLon && longitude <= Bounds.maxLon
+    }
+
+    /// Checks that a DIGIPIN string is either 10 characters with no hyphens, or
+    /// formatted as 3-3-4 characters with hyphens in exactly those positions.
+    private static func isValidFormat(_ digiPin: String) -> Bool {
+        let plainPattern = "^[A-Za-z0-9]{10}$"
+        let hyphenatedPattern = "^[A-Za-z0-9]{3}-[A-Za-z0-9]{3}-[A-Za-z0-9]{4}$"
+        return digiPin.range(of: plainPattern, options: .regularExpression) != nil ||
+            digiPin.range(of: hyphenatedPattern, options: .regularExpression) != nil
     }
 }
 

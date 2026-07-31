@@ -113,9 +113,16 @@ class InAppNotificationManager: ObservableObject {
     func removeNotification(_ id: UUID) {
         guard let index = notificationQueue.firstIndex(where: { $0.id == id}) else { return }
         notificationQueue[index].isDeleting = true
-        
-        withAnimation(.bouncy) {
-            let _ = notificationQueue.remove(at: index)
+
+        // Yield to the next run loop turn so SwiftUI actually renders the `isDeleting`
+        // state (and its zIndex boost) before the item is removed from the array —
+        // setting isDeleting and removing in the same synchronous pass gets coalesced
+        // into a single update, so the intermediate state is never observed.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            withAnimation(.bouncy) {
+                self.notificationQueue.removeAll(where: { $0.id == id })
+            }
         }
     }
     

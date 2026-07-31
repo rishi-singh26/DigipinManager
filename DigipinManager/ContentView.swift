@@ -14,14 +14,15 @@ struct ContentView: View {
     @EnvironmentObject private var mapController: MapController
     @EnvironmentObject private var notificationManager:  InAppNotificationManager
     
-    @State private var hasUpdatedMap = true
-    
+    @State private var hasUpdatedMap = false
+
     var body: some View {
         NotificationRootView {
             MapView()
                 .onReceive(locationManager.$location) { location in
                     if let location = location, !hasUpdatedMap {
                         mapController.updatedMapPosition(with: location.coordinate)
+                        hasUpdatedMap = true
                     } else if hasUpdatedMap {
                         locationManager.stopLocationUpdates()
                     }

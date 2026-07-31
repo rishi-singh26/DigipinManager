@@ -11,9 +11,7 @@ import MapKit
 
 class AddressUtility {
     static let shared = AddressUtility()
-    
-    private let geocoder = CLGeocoder()
-    
+
     private init () {}
     
     // MARK: - Address Search
@@ -69,6 +67,11 @@ class AddressUtility {
     }
     
     func getAddressFromLocation(_ location: CLLocation) async throws -> (AddressSearchResult?, String?) {
+        // CLGeocoder only supports one outstanding request at a time — issuing a second
+        // request on a shared instance cancels the first. Using a fresh instance per call
+        // lets concurrent reverse-geocode lookups (e.g. map panning + the coordinate
+        // converter) run independently without cancelling each other.
+        let geocoder = CLGeocoder()
         let placemarks = try await geocoder.reverseGeocodeLocation(location)
         
         guard let placemark = placemarks.first else {

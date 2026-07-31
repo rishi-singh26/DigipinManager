@@ -11,8 +11,9 @@ import UIKit
 
 class QRShareUtility {
     
+    // CIContext is documented as thread-safe and expensive to create, so it's shared.
+    // CIFilter is stateful and mutated per-call, so a fresh instance is created per call.
     private static let context = CIContext()
-    private static let filter = CIFilter.qrCodeGenerator()
     
     /// Generates a QR code with title and subtitle text
     /// - Parameters:
@@ -42,6 +43,7 @@ class QRShareUtility {
     /// - Returns: UIImage containing the QR code with text, or nil if generation fails
     static func generateQRCode(from string: String, isDarkMode: Bool = false) -> UIImage? {
         let data = Data(string.utf8)
+        let filter = CIFilter.qrCodeGenerator()
         filter.setValue(data, forKey: "inputMessage")
         
         guard let outputImage = filter.outputImage else { return nil }

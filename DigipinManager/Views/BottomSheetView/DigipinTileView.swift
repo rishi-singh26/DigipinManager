@@ -114,7 +114,7 @@ struct DigipinTileView: View {
     @ViewBuilder
     private func ShareMenuBuilder() -> some View {
         Menu {
-            ShareLink("Share Coordinates", item: location!.toString())
+            ShareLink("Share Coordinates", item: location?.toString() ?? "")
                 .disabled(location == nil)
             ShareLink("Share Address", item: address)
             ShareLink("Share DIGIPIN", item: pin)

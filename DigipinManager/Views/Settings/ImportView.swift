@@ -100,38 +100,42 @@ struct ImportView: View {
     
     private func importDPItems(completion: @escaping ([String: String]) -> Void) async {
         var errorMap: [String: String] = [:]
-        
+        // Digipins inserted earlier in this same loop: `dpItems` is a @Query snapshot
+        // that won't reflect modelContext.insert calls until the next render, so without
+        // this a file with two rows sharing a digipin would insert both as "not present".
+        var insertedDigipins: Set<String> = []
+
         guard let importVersion = viewModel.importDataVersion else {
             notificationManager.showToast(title: "Something went wrong! Import data not available", type: .error)
             return
         }
-        
+
         switch importVersion {
         case ExportVersion.v1:
             for item in viewModel.selectedV1DPItems {
-                let alreadyPresentIndex = dpItems.firstIndex(where: { $0.id == item.digipin })
-                
-                guard alreadyPresentIndex == nil else {
+                let alreadyPresent = dpItems.contains(where: { $0.id == item.digipin }) || insertedDigipins.contains(item.digipin)
+
+                guard !alreadyPresent else {
                     errorMap[item.digipin] = "Already present in pinned list"
                     continue
                 }
-                
+
                 guard let lat = Double(item.latitude) else {
                     errorMap[item.digipin] = "Invalid latitude data"
                     continue
                 }
-                
+
                 guard let lon = Double(item.longitude) else {
                     errorMap[item.digipin] = "Invalid longitude data"
                     continue
                 }
-                
+
                 let formatter = ISO8601DateFormatter()
                 guard let date = formatter.date(from: item.createdAt) else {
                     errorMap[item.digipin] = "Invalid date"
                     continue
                 }
-                
+
                 modelContext.insert(DPItem(
                     pin: item.digipin,
                     note: item.note,
@@ -141,14 +145,24 @@ struct ImportView: View {
                     favourite: item.favourite == "Yes",
                     createdAt: date
                 ))
+                insertedDigipins.insert(item.digipin)
             }
         case ExportVersion.v2:
             notificationManager.showToast(title: "Unsupported version", type: .error)
-            break
+            completion(errorMap)
+            return
         }
-        
+
         try? modelContext.save()
-        notificationManager.showToast(title: "Import successfull", type: .success)
+        completion(errorMap)
+
+        if insertedDigipins.isEmpty {
+            notificationManager.showToast(title: "No DIGIPINs were imported", type: .warning)
+        } else if errorMap.isEmpty {
+            notificationManager.showToast(title: "Import successfull", type: .success)
+        } else {
+            notificationManager.showToast(title: "Imported \(insertedDigipins.count) of \(viewModel.selectedV1DPItems.count) DIGIPINs", type: .warning)
+        }
     }
     
     private func handleSelectionChange(old: Set<ExportV1DPItem>, newSelection: Set<ExportV1DPItem>) {

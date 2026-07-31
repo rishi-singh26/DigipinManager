@@ -50,7 +50,6 @@ class LocationManager: NSObject, ObservableObject {
     }
     
     func requestLocationPermission() {
-        guard canAskForPermission else { return }
         switch authorizationStatus {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()

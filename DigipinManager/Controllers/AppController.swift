@@ -48,7 +48,9 @@ extension AppController {
                 self.showOnboarding = true
             }
         } else {
-            CopyToClipboardTip.show = true // start showing tips if user has already seen onboarding view
+            await MainActor.run {
+                CopyToClipboardTip.show = true // start showing tips if user has already seen onboarding view
+            }
         }
     }
     func hideOnboardingSheet() {

@@ -11,13 +11,16 @@ import UniformTypeIdentifiers
 enum PortError: Error {
     case objectToDataConversionFailed
     case encodingFailed(underlying: Error)
-    
+    case unsupportedExportType(UTType)
+
     var errorDescription: String? {
         switch self {
         case .objectToDataConversionFailed:
             return "Failed to convert export object to data."
         case .encodingFailed(let underlying):
             return "Failed to encode object to JSON. Reason: \(underlying.localizedDescription)"
+        case .unsupportedExportType(let type):
+            return "Unsupported export type: \(type)."
         }
     }
 }
@@ -148,7 +151,7 @@ struct ExportDataVersionOne: Portable {
         case .commaSeparatedText:
             self.toCSV()
         default:
-            Data()
+            throw PortError.unsupportedExportType(type)
         }
     }
 }
@@ -176,7 +179,7 @@ struct ExportV1DPItem: Codable, Hashable {
         self.digipin = dpItem.id
         self.note = dpItem.note ?? ""
         self.address = dpItem.address
-        self.latitude = String(format: "%.7f", dpItem.longitude)
+        self.latitude = String(format: "%.7f", dpItem.latitude)
         self.longitude = String(format: "%.7f", dpItem.longitude)
         self.favourite = dpItem.favourite ? "Yes" : "No"
         self.createdAt = dpItem.createdAt.ISO8601Format()
@@ -190,12 +193,15 @@ struct ExportV1DPItem: Codable, Hashable {
     
     /// Creates an `ExportV1DPItem` from a single CSV row string
     static func fromCSVRow(_ csvRow: String) -> ExportV1DPItem? {
-        let fields = ImportUtility.decodeCSVRow(row: csvRow)
-        
+        fromCSVFields(ImportUtility.decodeCSVRow(row: csvRow))
+    }
+
+    /// Creates an `ExportV1DPItem` from an already-split array of CSV field values
+    static func fromCSVFields(_ fields: [String]) -> ExportV1DPItem? {
         guard fields.count == 8 else {
             return nil
         }
-        
+
         return ExportV1DPItem(
             digipin: fields[0],
             note: fields[4],

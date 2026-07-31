@@ -605,22 +605,24 @@ extension String {
         
         do {
             let regex = try NSRegularExpression(pattern: pattern, options: [])
-            let range = NSRange(location: 0, length: self.count)
+            // NSRange/NSRegularExpression operate on UTF-16 code units, not grapheme
+            // clusters, so lengths and offsets must be measured via NSString, not String.count.
+            let range = NSRange(location: 0, length: (self as NSString).length)
             let matches = regex.matches(in: self, options: [], range: range)
-            
+
             var result = self
             var offset = 0
-            
+
             for match in matches {
                 let matchRange = NSRange(location: match.range.location + offset, length: match.range.length)
                 let nsString = result as NSString
                 // let matchString = nsString.substring(with: NSRange(location: match.range.location, length: match.range.length))
                 let replacementString = replacement(match)
-                
+
                 result = nsString.replacingCharacters(in: matchRange, with: replacementString)
-                offset += replacementString.count - match.range.length
+                offset += (replacementString as NSString).length - match.range.length
             }
-            
+
             return result
         } catch {
             return self
