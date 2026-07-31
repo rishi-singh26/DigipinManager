@@ -9,16 +9,12 @@ import SwiftUI
 import SwiftData
 
 extension View {
-    
+
     @ViewBuilder
     func adaptiveSheet(_ width: CGFloat, isActive: Bool) -> some View {
         self
             .background {
-                if isActive {
-                    AdaptiveSheetHelper(width: width, isActive: true)
-                } else {
-                    AdaptiveSheetHelper(width: width, isActive: false)
-                }
+                AdaptiveSheetHelper(width: width, isActive: isActive)
             }
     }
 }
@@ -26,55 +22,90 @@ extension View {
 fileprivate struct AdaptiveSheetHelper: UIViewControllerRepresentable {
     var width: CGFloat
     var isActive: Bool
-    
-    func makeUIViewController(context: Context) -> UIViewController {
-        let controller = UIViewController()
+
+    func makeUIViewController(context: Context) -> AdaptiveSheetContainerController {
+        let controller = AdaptiveSheetContainerController()
         controller.view.backgroundColor = .clear
-        
-        DispatchQueue.main.async {
-            if let sheetController = controller.sheetPresentationController {
-                guard let sheet = sheetController.containerView,
-                      let window = controller.view.window else {
-                    return
-                }
-                
-                // Finding the Background View and setting clear background!
-                if let backgroundView = sheet.subviews.first(where: {
-                    $0.subviews.contains(where: { $0.backgroundColor != nil })
-                }) {
-                    // Clearing Background Color
-                    for subview in backgroundView.subviews {
-                        subview.backgroundColor = .clear
-                    }
-                }
-                
-                // Animating it inside sheet animations
-                sheetController.animateChanges {
-                    if isActive {
-                        // Adding Set of constraints to limit the sheet container view's width, this it automatically pushes towards leading side without any additional code.
-                        sheet.translatesAutoresizingMaskIntoConstraints = false
-                        
-                        NSLayoutConstraint.activate([
-                            sheet.leadingAnchor.constraint(equalTo: window.leadingAnchor),
-                            sheet.topAnchor.constraint(equalTo: window.topAnchor),
-                            sheet.bottomAnchor.constraint(equalTo: window.bottomAnchor),
-                            sheet.widthAnchor.constraint(lessThanOrEqualToConstant: width),
-                            sheet.widthAnchor.constraint(equalTo: window.widthAnchor).priority(.defaultHigh)
-                        ])
-                    } else {
-                        // Resetting Lauout Contraints
-                        sheet.translatesAutoresizingMaskIntoConstraints = true
-                        sheet.frame = window.frame
-                        sheet.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                    }
-                }
-            }
-        }
+        controller.width = width
+        controller.isActive = isActive
         return controller
     }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        
+
+    func updateUIViewController(_ uiViewController: AdaptiveSheetContainerController, context: Context) {
+        uiViewController.width = width
+        uiViewController.setActive(isActive)
+    }
+}
+
+/// Applying the width-limiting constraints from `viewWillLayoutSubviews` (instead of
+/// `DispatchQueue.main.async`) ensures they land before the sheet's first frame is painted,
+/// so the sheet is already leading-aligned when it appears instead of visibly jumping there
+/// from a center-aligned first frame.
+fileprivate class AdaptiveSheetContainerController: UIViewController {
+    var width: CGFloat = 0
+    var isActive: Bool = false
+    private var hasAppliedInitialLayout = false
+
+    func setActive(_ newValue: Bool) {
+        let changed = isActive != newValue
+        isActive = newValue
+        guard hasAppliedInitialLayout, changed else { return }
+        applyConstraints(animated: true)
+    }
+
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        guard !hasAppliedInitialLayout,
+              sheetPresentationController?.containerView != nil,
+              view.window != nil else {
+            return
+        }
+        hasAppliedInitialLayout = true
+        applyConstraints(animated: false)
+    }
+
+    private func applyConstraints(animated: Bool) {
+        guard let sheetController = sheetPresentationController,
+              let sheet = sheetController.containerView,
+              let window = view.window else {
+            return
+        }
+
+        // Finding the Background View and setting clear background!
+        if let backgroundView = sheet.subviews.first(where: {
+            $0.subviews.contains(where: { $0.backgroundColor != nil })
+        }) {
+            // Clearing Background Color
+            for subview in backgroundView.subviews {
+                subview.backgroundColor = .clear
+            }
+        }
+
+        let updates = { [isActive, width] in
+            if isActive {
+                // Adding Set of constraints to limit the sheet container view's width, this automatically pushes it towards the leading side without any additional code.
+                sheet.translatesAutoresizingMaskIntoConstraints = false
+
+                NSLayoutConstraint.activate([
+                    sheet.leadingAnchor.constraint(equalTo: window.leadingAnchor),
+                    sheet.topAnchor.constraint(equalTo: window.topAnchor),
+                    sheet.bottomAnchor.constraint(equalTo: window.bottomAnchor),
+                    sheet.widthAnchor.constraint(lessThanOrEqualToConstant: width),
+                    sheet.widthAnchor.constraint(equalTo: window.widthAnchor).priority(.defaultHigh)
+                ])
+            } else {
+                // Resetting Layout Constraints
+                sheet.translatesAutoresizingMaskIntoConstraints = true
+                sheet.frame = window.frame
+                sheet.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            }
+        }
+
+        if animated {
+            sheetController.animateChanges(updates)
+        } else {
+            updates()
+        }
     }
 }
 

@@ -66,7 +66,7 @@ struct BottomSheetView: View {
         .presentationCompactAdaptation(.none)
         .interactiveDismissDisabled()
         .presentationCornerRadius(viewModel.cornerRadius)
-        .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
+        .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         .onGeometryChange(for: CGFloat.self, of: handleGeometryProxy, action: handleGeometryChange)
         .ignoresSafeArea()
         .onChange(of: (isConnected ?? true), { _, new in
@@ -81,7 +81,7 @@ struct BottomSheetView: View {
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
                 .presentationDetents([.fraction(0.99)])
-                .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
+                .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: $appController.showOnboarding) {
             locationManager.requestLocationPermission()
@@ -97,11 +97,11 @@ struct BottomSheetView: View {
                 }
             }
             .presentationCornerRadius(viewModel.cornerRadius)
-            .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
+            .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         }
         .sheet(isPresented: Binding<Bool>(get: { viewModel.selectedMarker != nil }, set: { _ in viewModel.selectedMarker = nil })) {
             DetailView()
-                .adaptiveSheet(350, isActive: viewModel.isLargeScreen)
+                .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
                 .presentationCornerRadius(viewModel.cornerRadius)
         }
         .onChange(of: viewModel.searchText, handleSearchTextChange)
@@ -170,10 +170,13 @@ extension BottomSheetView {
 // MARK: - View Functions
 extension BottomSheetView {
     private func handleGeometryProxy(proxy: GeometryProxy) -> CGFloat {
-        max(min(proxy.size.height, 400 + viewModel.safeAreaBottomInset), 0)
+        max(min(proxy.size.height + 20, 420 + viewModel.safeAreaBottomInset), 0)
     }
     
     private func handleGeometryChange(oldValue: CGFloat, newValue: CGFloat) {
+        // Toolbar items animation only for mobile screens
+        guard viewModel.isLargeScreen == false else { return }
+        
         // limiting the offset to 300, so toolbar opacity effect will be visible
         viewModel.sheetHeight = min(newValue, MapViewModel.sheetMidHeight + viewModel.safeAreaBottomInset)
         

@@ -93,12 +93,12 @@ struct MapView: View {
             $0.size.width > 600
         } action: { newValue in
             // Update Detents before any changes!
-            if viewModel.sheetDetent != .height(85) && newValue {
-                viewModel.sheetDetent = .fraction(0.97)
-            } else if viewModel.sheetDetent == .fraction(0.97) && !newValue {
-                viewModel.sheetDetent = .fraction(0.45)
+            if viewModel.sheetDetent != .height(MapViewModel.lowDetent) && newValue {
+                viewModel.sheetDetent = .fraction(MapViewModel.largeScreenHighDetent)
+            } else if viewModel.sheetDetent == .fraction(MapViewModel.highDetent) && !newValue {
+                viewModel.sheetDetent = .fraction(MapViewModel.midDetent)
             } else {
-                viewModel.sheetDetent = .height(85)
+                viewModel.sheetDetent = .height(MapViewModel.lowDetent)
             }
             
             viewModel.isLargeScreen = newValue
@@ -142,17 +142,12 @@ struct MapView: View {
         }
         .font(.title3)
         .foregroundStyle(Color.primary)
-        .padding(.vertical, 15)
-        //.glassEffect(.regular, in: .capsule)
-        // remove background in ios26
-        .background(.thickMaterial, in: .rect(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.secondary.opacity(0.2), lineWidth: 0.5)
-        )
+        .padding(.vertical, 12)
+        .withOSSurface(.capsule)
         .opacity(viewModel.toolbarOpacity)
         .offset(y: -viewModel.sheetHeight)
         .animation(.interpolatingSpring(duration: viewModel.animationDuration, bounce: 0, initialVelocity: 0), value: viewModel.sheetHeight)
+        .padding(.trailing, 10)
     }
     
     @ViewBuilder

@@ -38,13 +38,18 @@ struct ExportView: View {
         }
         .environment(\.editMode, .constant(.active))
         .toolbar {
-            Button {
-                viewModel.showExportTypePicker = true
+            Menu {
+                ForEach(ExportTypes.allCases) { exportType in
+                    Button {
+                        viewModel.selectedExportType = exportType
+                    } label: {
+                        Label(exportType.displayName, systemImage: exportType.symbol)
+                    }
+                }
             } label: {
                 Text(viewModel.selectedExportType.displayName)
-                    .contentTransition(.numericText())
-                    .frame(minWidth: 80, alignment: .trailing)
             }
+
         }
         .toolbar(content: {
             ToolbarItemGroup(placement: .bottomBar) {
@@ -63,9 +68,6 @@ struct ExportView: View {
         })
         .navigationTitle("Export")
         .navigationBarTitleDisplayMode(.inline)
-        .systemTrayView($viewModel.showExportTypePicker) {
-            ExportTypePicker()
-        }
         .fileExporter(
             isPresented: $viewModel.isExportingFile,
             document: try? MultiFormatDocument(
@@ -81,82 +83,6 @@ struct ExportView: View {
                 notificationManager.showToast(title: newValue, type: viewModel.notificationType)
             }
         }
-    }
-    
-    @ViewBuilder
-    private func ExportTypePicker() -> some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 12) {
-                HStack {
-                    Text("Choose Export Type")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    
-                    Spacer(minLength: 0)
-                    
-                    Button {
-                        viewModel.showExportTypePicker = false
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(Color.gray, Color.primary.opacity(0.1))
-                    }
-                }
-                .padding(.bottom, 25)
-                
-                VStack(alignment: .leading) {
-                    Text(viewModel.selectedExportType.description)
-                        .multilineTextAlignment(.leading)
-                        .transition(.slide)
-                        .padding(20)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.ultraThinMaterial, in: .rect(cornerRadius: 25))
-                .padding(.bottom, 25)
-                
-                ForEach(ExportTypes.allCases) { exportType in
-                    let isSelected: Bool = exportType == viewModel.selectedExportType
-                    
-                    HStack(spacing: 10) {
-//                        Label(exportType.displayName, systemImage: exportType.symbol)
-                        Image(systemName: exportType.symbol)
-                            .frame(width: 40)
-                        
-                        Text(exportType.displayName)
-                        
-                        Spacer()
-                        
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle.fill")
-                            .font(.title3)
-                            .contentTransition(.symbolEffect)
-                            .foregroundStyle(isSelected ? .accentColor : Color.gray.opacity(0.2))
-                    }
-                    .padding(.vertical, 6)
-                    .contentShape(.rect)
-                    .onTapGesture {
-                        if !isSelected {
-                            withAnimation(.bouncy) {
-                                viewModel.selectedExportType = exportType
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Continue button
-            Button {
-                viewModel.showExportTypePicker = false
-            } label: {
-                Text("Continue")
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .foregroundStyle(.white)
-                    .background(Color.accentColor, in: .capsule)
-            }
-            .padding(.top, 15)
-        }
-        .padding(20)
     }
 }
 

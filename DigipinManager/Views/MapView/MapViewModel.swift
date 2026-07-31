@@ -9,11 +9,16 @@ import SwiftUI
 
 class MapViewModel: ObservableObject {
     static let shared = MapViewModel()
-    static let sheetMidHeight: CGFloat = 318
+    static let sheetMidHeight: CGFloat = 360
+    
+    static let lowDetent: CGFloat = 75
+    static let midDetent: CGFloat = 0.45
+    static let highDetent: CGFloat = 0.98
+    static let largeScreenHighDetent: CGFloat = 0.97
     
     @Published var showBottomSheet: Bool = false
     @Published var isLargeScreen: Bool = false
-    @Published var sheetDetent: PresentationDetent = .height(70)
+    @Published var sheetDetent: PresentationDetent = .height(MapViewModel.lowDetent)
     @Published var sheetHeight: CGFloat = 0
     @Published var animationDuration: CGFloat = 0
     @Published var toolbarOpacity: CGFloat = 1
@@ -32,9 +37,9 @@ class MapViewModel: ObservableObject {
     
     var detents: Set<PresentationDetent> {
         if isLargeScreen {
-            return [.height(70), .fraction(0.97)]
+            return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.largeScreenHighDetent)]
         }
-        return [.height(70), .fraction(0.45), .fraction(0.98)]
+        return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.midDetent), .fraction(MapViewModel.highDetent)]
     }
     
     var cornerRadius: CGFloat? {
