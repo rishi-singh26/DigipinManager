@@ -13,6 +13,7 @@ class MapViewModel: ObservableObject {
     
     static let lowDetent: CGFloat = 75
     static let midDetent: CGFloat = 0.45
+    static let highDetent: CGFloat = 0.98
     static let largeScreenHighDetent: CGFloat = 0.97
     
     @Published var showBottomSheet: Bool = false
@@ -41,7 +42,7 @@ class MapViewModel: ObservableObject {
         if isLargeScreen {
             return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.largeScreenHighDetent)]
         }
-        return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.midDetent), .large]
+        return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.midDetent), .fraction(MapViewModel.highDetent)]
     }
     
     var cornerRadius: CGFloat? {
