@@ -10,17 +10,21 @@ import MapKit
 
 struct MapStylePickerView: View {
     @EnvironmentObject private var mapController: MapController
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var mapViewModel: MapViewModel
     
     var body: some View {
         VStack {
             HStack {
+                Spacer()
+                Spacer()
+                Spacer()
                 Text("Choose Map")
                     .font(.title2)
                     .fontWeight(.semibold)
                 Spacer()
+                Spacer()
                 CButton.XMarkBtn {
-                    dismiss()
+                    mapViewModel.dismissMapStylePicker()
                 }
             }
             .padding()
@@ -32,8 +36,7 @@ struct MapStylePickerView: View {
             
             Spacer()
         }
-        .presentationDetents([.height(350)])
-        .presentationDragIndicator(.visible)
+        .frame(maxWidth: 350, maxHeight: 215)
     }
     
     @ViewBuilder
@@ -78,7 +81,7 @@ struct MapStylePickerView: View {
     }
     .sheet(isPresented: $showPicker, content: {
         MapStylePickerView()
-            .presentationDetents([.height(350)])
     })
     .environmentObject(MapController.shared)
+    .environmentObject(MapViewModel.shared)
 }

@@ -23,7 +23,6 @@ class MapController: ObservableObject {
     /// Current map center position
     @Published var position: MapCameraPosition
     @Published var selectedMapStyleType: MapStyleType = .imagery { didSet { saveSelectedMapStyle() }}
-    @Published var showMapStyleSheet: Bool = false
     
     @Published private(set) var mapCenter: CLLocationCoordinate2D? { didSet { updatePinAndAddress() } }
     /// pin for mapCenter, when map camera moves, the min for the map center is updated here

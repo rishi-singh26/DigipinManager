@@ -44,6 +44,7 @@ struct BottomSheetView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
                         showSettingsSheet = true
+                        viewModel.dismissMapStylePicker()
                     } label: {
                         Label("Options", systemImage: "switch.2")
                     }
@@ -51,6 +52,7 @@ struct BottomSheetView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         notificationManager.showCoordsToPinConverter()
+                        viewModel.dismissMapStylePicker()
                     } label: {
                         Label("Coordinates to DIGIPIN", systemImage: "point.bottomleft.forward.to.arrow.triangle.scurvepath")
                     }
@@ -75,13 +77,8 @@ struct BottomSheetView: View {
         .sheet(isPresented: $showNotNetworkSheet) {
             NoInternetView()
         }
-        .sheet(isPresented: $mapController.showMapStyleSheet) {
-            MapStylePickerView()
-                .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
-        }
         .sheet(isPresented: $showSettingsSheet) {
             SettingsView()
-                .presentationDetents([.fraction(0.99)])
                 .presentationBackgroundInteraction((isConnected ?? true) ? .enabled : .disabled)
                 .adaptiveSheet(400, isActive: viewModel.isLargeScreen)
         }
@@ -153,7 +150,6 @@ extension BottomSheetView {
             }
         }
         .animation(.default, value: viewModel.sheetHeight < 150)
-//        .padding(.horizontal, 20)
         .frame(width: 230, height: 48)
         .frame(maxWidth: .infinity, alignment: .center)
         .transition(.blurReplace)
@@ -177,11 +173,13 @@ extension BottomSheetView {
     }
     
     private func handleGeometryChange(oldValue: CGFloat, newValue: CGFloat) {
-        // Toolbar items animation only for mobile screens
-        guard viewModel.isLargeScreen == false else { return }
+        viewModel.dismissMapStylePicker()
         
         // limiting the offset to 300, so toolbar opacity effect will be visible
         viewModel.sheetHeight = min(newValue, MapViewModel.sheetMidHeight + viewModel.safeAreaBottomInset)
+        
+        // Toolbar items animation only for mobile screens
+        guard viewModel.isLargeScreen == false else { return }
         
         // Calculate toolbar opacity
         let progress = max(min((newValue - (MapViewModel.sheetMidHeight + viewModel.safeAreaBottomInset)) / 50, 1), 0)

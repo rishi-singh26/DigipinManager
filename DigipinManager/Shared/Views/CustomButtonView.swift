@@ -84,5 +84,13 @@ struct CButton {
         CButton.RoundBtn(symbol: "xmark") {
             print("xmark")
         }
+        
+        CButton.XMarkBtn {
+            print("XMarkBtn")
+        }
+        
+        CButton.XMarkFillBtn {
+            print("XMarkFillBtn")
+        }
     }
 }

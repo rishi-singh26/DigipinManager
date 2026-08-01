@@ -9,11 +9,10 @@ import SwiftUI
 
 class MapViewModel: ObservableObject {
     static let shared = MapViewModel()
-    static let sheetMidHeight: CGFloat = 360
+    static let sheetMidHeight: CGFloat = 370
     
     static let lowDetent: CGFloat = 75
     static let midDetent: CGFloat = 0.45
-    static let highDetent: CGFloat = 0.98
     static let largeScreenHighDetent: CGFloat = 0.97
     
     @Published var showBottomSheet: Bool = false
@@ -32,6 +31,9 @@ class MapViewModel: ObservableObject {
     /// Id of marker selected on map
     @Published var selectedMarker: String?
     
+    @Published var mapStylePickerProgress: CGFloat = 0
+    @Published var mapStylePcikerAnimation: Animation = .bouncy(duration: 0.4, extraBounce: 0.01)
+    
     private init() {}
     
     
@@ -39,7 +41,7 @@ class MapViewModel: ObservableObject {
         if isLargeScreen {
             return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.largeScreenHighDetent)]
         }
-        return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.midDetent), .fraction(MapViewModel.highDetent)]
+        return [.height(MapViewModel.lowDetent), .fraction(MapViewModel.midDetent), .large]
     }
     
     var cornerRadius: CGFloat? {
@@ -53,5 +55,26 @@ class MapViewModel: ObservableObject {
         withAnimation {
             showBottomSheet = value
         }
+    }
+    
+    func dismissMapStylePicker() {
+        guard mapStylePickerProgress > 0 else { return }
+        
+        withAnimation(mapStylePcikerAnimation) {
+            mapStylePickerProgress = 0
+        }
+    }
+    
+    func handleScreenResize(with newValue: Bool) {
+        // Update Detents before any changes!
+        if sheetDetent != .height(MapViewModel.lowDetent) && newValue {
+            sheetDetent = .fraction(MapViewModel.largeScreenHighDetent)
+        } else if sheetDetent == .fraction(MapViewModel.largeScreenHighDetent) && !newValue {
+            sheetDetent = .fraction(MapViewModel.midDetent)
+        } else {
+            sheetDetent = .height(MapViewModel.lowDetent)
+        }
+        
+        isLargeScreen = newValue
     }
 }

@@ -56,11 +56,12 @@ struct MapView: View {
                     MapUserLocationButton(scope: mapScope)
                 }
                 MapScaleView(anchorEdge: .leading, scope: mapScope)
-                //MapPitchToggle(scope: mapScope)
+                MapPitchToggle(scope: mapScope)
                 MapCompass(scope: mapScope)
             }
             .mapControlVisibility(.visible)
             .onMapCameraChange(frequency: .onEnd, handleCameraMoveEnd)
+            .onMapCameraChange(frequency: .continuous, handleCameraMove)
             
             ScopeBuilder()
             
@@ -75,12 +76,9 @@ struct MapView: View {
         .sheet(isPresented: $viewModel.showBottomSheet) {
             BottomSheetView()
         }
-        .overlay(alignment: .bottomTrailing) {
-            // Show map style switcher only when bottom sheet is shown
+        .overlay {
             if viewModel.showBottomSheet {
                 BottomFloatingToolbar()
-                    .padding(.trailing, 10)
-                    .offset(y: DeviceType.isIpad ? 0 : viewModel.safeAreaBottomInset - 10)
             }
         }
         .onGeometryChange(for: CGFloat.self) {
@@ -91,16 +89,7 @@ struct MapView: View {
         .onGeometryChange(for: Bool.self) {
             $0.size.width > 600
         } action: { newValue in
-            // Update Detents before any changes!
-            if viewModel.sheetDetent != .height(MapViewModel.lowDetent) && newValue {
-                viewModel.sheetDetent = .fraction(MapViewModel.largeScreenHighDetent)
-            } else if viewModel.sheetDetent == .fraction(MapViewModel.largeScreenHighDetent) && !newValue {
-                viewModel.sheetDetent = .fraction(MapViewModel.midDetent)
-            } else {
-                viewModel.sheetDetent = .height(MapViewModel.lowDetent)
-            }
-            
-            viewModel.isLargeScreen = newValue
+            viewModel.handleScreenResize(with: newValue)
         }
         .onChange(of: viewModel.showBottomSheet) { _, newValue in
             // Update map center, DIGIPIN and Address when showBottomSheet is set to true
@@ -108,45 +97,9 @@ struct MapView: View {
                 mapController.onMapRegionChanged(region)
             }
         }
-    }
-    
-    @ViewBuilder
-    private func BottomFloatingToolbar() -> some View {
-        VStack(spacing: 15) {
-            Button {
-                mapController.showMapStyleSheet = true
-            } label: {
-                Image(systemName: "map")
-                    .foregroundStyle(Color.accentColor)
-            }
-            .padding(.horizontal, 10)
-            
-            if !locationManager.hasLocationPermission {
-                Divider().frame(maxWidth: 30)
-                Button {
-                    if locationManager.canAskForPermission {
-                        locationManager.requestLocationPermission()
-                    } else {
-                        if let url = URL(string: UIApplication.openSettingsURLString),
-                           UIApplication.shared.canOpenURL(url) {
-                            UIApplication.shared.open(url)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "location.slash")
-                        .foregroundStyle(Color.accentColor)
-                }
-                .padding(.horizontal, 10)
-            }
+        .onTapGesture {
+            viewModel.dismissMapStylePicker()
         }
-        .font(.title3)
-        .foregroundStyle(Color.primary)
-        .padding(.vertical, 12)
-        .withOSSurface(.capsule)
-        .opacity(viewModel.toolbarOpacity)
-        .offset(y: -viewModel.sheetHeight)
-        .animation(.interpolatingSpring(duration: viewModel.animationDuration, bounce: 0, initialVelocity: 0), value: viewModel.sheetHeight)
-        .padding(.trailing, 10)
     }
     
     @ViewBuilder
@@ -161,6 +114,10 @@ struct MapView: View {
         if viewModel.showBottomSheet {
             mapController.onMapRegionChanged(context.region)
         }
+    }
+    
+    private func handleCameraMove(context: MapCameraUpdateContext) {
+        viewModel.dismissMapStylePicker()
     }
 }
 
